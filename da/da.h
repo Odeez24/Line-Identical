@@ -41,11 +41,14 @@ extern da *da_empty();
 //    affecte NULL à *tptr.
 extern void da_dispose(da **aptr);
 
-
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
 //    selon la méthode de l'ajout en bout de chemin renvoie NULL en cas de
 //    dépassement de capacité ; renvoie sinon ref.
 extern void *da_add(da *p, const void *ref);
+
+//  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
+//    sinon renvoie le référence d'incide i du tableau pointé par p
+extern void *da_ref(da *p, size_t i);
 
 //  da_length : renvoie la longueur de la file de priorité associée à p.
 extern size_t da_length(da *p);

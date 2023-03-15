@@ -9,7 +9,6 @@
 
 //--- Définition da ----------------------------------------------------------
 
-
 struct da {
   const void **aref;
   size_t length;
@@ -23,9 +22,9 @@ struct da {
 
 //--- Fonctions da -------------------------------------------------------------
 
-da *da_empty(){
+da *da_empty() {
   da *p = malloc(sizeof *p);
-  if (p == NULL){
+  if (p == NULL) {
     return NULL;
   }
   const void **tab = malloc(DA__CAPACITY_MIN * sizeof *(p->aref));
@@ -39,8 +38,8 @@ da *da_empty(){
   return p;
 }
 
-void da_dispose(da **aptr){
-  if (*aptr == NULL){
+void da_dispose(da **aptr) {
+  if (*aptr == NULL) {
     return;
   }
   free((*aptr)->aref);
@@ -49,12 +48,12 @@ void da_dispose(da **aptr){
   return;
 }
 
-void *da_add(da *p, const void *ref){
-  if (ref == NULL){
+void *da_add(da *p, const void *ref) {
+  if (ref == NULL) {
     return NULL;
   }
-  if (LENGTH(p) == CAPACITY(p)){
-    if (((sizeof * (p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
+  if (LENGTH(p) == CAPACITY(p)) {
+    if (((sizeof *(p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
       return NULL;
     }
     const void **t
@@ -66,11 +65,22 @@ void *da_add(da *p, const void *ref){
     p->aref = t;
     p->capacity *= DA__CAPACITY_MUL;
   }
-  p->aref[p->length] = ref;
+  p->aref[LENGTH(p)] = ref;
   LENGTH(p) += 1;
-  return (void *)ref;
+  return (void *) ref;
 }
 
-size_t da_length(da *p){
+void *da_ref(da *p, size_t i) {
+  if (p == NULL) {
+    return NULL;
+  }
+  if (i > LENGTH(p)) {
+    return NULL;
+  }
+  const void *v = p->aref[i];
+  return (void *) v;
+}
+
+size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
 }
