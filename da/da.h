@@ -1,8 +1,8 @@
 //  da.h : partie interface d'un module polymorphe pour la spécification d'un
 //    tableau dynamique.
 
-#ifndef BST__H
-#define BST__H
+#ifndef DA__H
+#define DA__H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,8 +37,8 @@ typedef struct da da;
 extern da *da_empty();
 
 //  da_dispose : sans effet si *aptr vaut NULL, Libère sinon les ressources
-//    allouées à la gestion de l'arbre binaire de recherche associé à *aptr puis
-//    affecte NULL à *tptr.
+//    allouées à la gestion du tableaux dynamique associé à *aptr puis
+//    affecte NULL à *aptr.
 extern void da_dispose(da **aptr);
 
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
@@ -47,10 +47,13 @@ extern void da_dispose(da **aptr);
 extern void *da_add(da *p, const void *ref);
 
 //  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
-//    sinon renvoie le référence d'incide i du tableau pointé par p
+//    sinon renvoie la référence d'incide i du tableau pointé par p
 extern void *da_ref(da *p, size_t i);
 
-//  da_length : renvoie la longueur de la file de priorité associée à p.
+//  da_length : renvoie la longueur du tableaux associés à p.
 extern size_t da_length(da *p);
+
+//  da_capacity : renvoie la capaciter du tableaux associés à p.
+extern size_t da_capacity(da *p);
 
 #endif

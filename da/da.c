@@ -84,3 +84,7 @@ void *da_ref(da *p, size_t i) {
 size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
 }
+
+size_t da_capacity(da *p) {
+  return IS_EMPTY(p) ? 0 : CAPACITY(p);
+}
