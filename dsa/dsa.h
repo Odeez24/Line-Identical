@@ -41,16 +41,12 @@ extern dsa *dsa_empty();
 //    allouées à la gestion du DSA associé à *aptr puis affecte NULL à *aptr.
 extern void dsa_dispose(dsa **aptr);
 
-//  dsa_add_string : Renvoie NULL si filename vaut NULL. Tente sinon de lire une
-//    ligne du filename et de l'ajouter a un tableaux dynamique de DSA, renvoie
-//    NULL en cas de dépassement de capacité; renvoie sinon le pointeur vers le
-//    tableaux.
-extern void *dsa_add_string(dsa *p, FILE *filename);
-
-
-//  dsa_add_cpt : Ajoute numlign au tableau dynamique d'entier positif du DSA
-//    renvoie le pointeur vers le numéro de la ligne;
-extern void *dsa_add_cpt(dsa *p, size_t *numlign);
+//  dsa_add : On suppose que le fichier filename est ouvert en lecture. Tente
+//    sinon de lire une ligne du filename et de l'ajouter a un tableaux
+//    dynamique de DSA et ajoute son numéro de ligne numlign au tableaux CPT,
+//    renvoie NULL en cas de dépassement de capacité ou de probleme de lecture
+//    sur le fichier; renvoie sinon le pointeur vers le tableaux.
+extern void *dsa_add_string(dsa *p, FILE *filename, size_t *numlign);
 
 //  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
 //    sinon renvoie la référence d'incide i du tableau pointé par p
