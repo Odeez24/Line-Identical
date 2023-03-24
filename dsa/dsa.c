@@ -20,9 +20,10 @@ struct dsa {
 
 //--- Fonction interne ---------------------------------------------------------
 //  line : Ajoute une ligne du fichier filename au tableaux dynamique pointer
-//    par p. Renvoie une valeur négative en cas de dépassement de capacité ou de
+//    par p.
+//    Renvoie une valeur négative en cas de dépassement de capacité ou de
 //    probleme de lecture ou une valeur positive si on arrive a la fin du
-//    fichiersla valeur null sinon.
+//    fichier la valeur null sinon.
 int line(da *p, FILE *filename);
 
 //--- Fonctions dsa ------------------------------------------------------------
@@ -58,11 +59,6 @@ void dsa_dispose(dsa **aptr) {
   *aptr = NULL;
 }
 
-//  dsa_add : On suppose que le fichier filename est ouvert en lecture. Tente
-//    sinon de lire une ligne du filename et de l'ajouter a un tableaux
-//    dynamique de DSA et ajoute son numéro de ligne numlign au tableaux CPT,
-//    renvoie NULL en cas de dépassement de capacité ou de probleme de lecture
-//    sur le fichier; renvoie sinon le pointeur vers le tableaux.
 void *dsa_add_string(dsa *p, FILE *filename, size_t *numlign) {
   int *r;
   if ((*r =line(STRING(p), filename)) < 0) {

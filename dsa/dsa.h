@@ -27,39 +27,41 @@
 //      doivent gérer les cas de dépassement de capacité ne doivent avoir
 //      affaire avec aucun problème de la sorte.
 
-//  struct dsa, dsa : type et nom de type d'un contrôleur regroupant les
+//  struct dsa, dsa : Type et nom de type d'un contrôleur regroupant les
 //    informations nécessaires pour gérer une structure utilisant des tableaux
 //    dynamique d'objets quelconques.
 typedef struct dsa dsa;
 
-//  dsa_empty : tente d'allouer les ressources nécessaires pour gérer un nouveau
-//    DSA initialement vide. Renvoie NULL en cas de dépassement de
-//    capacité. Renvoie sinon un pointeur vers le contrôleur associé au DSA.
+//  dsa_empty : Tente d'allouer les ressources nécessaires pour gérer un nouveau
+//    DSA initialement vide.
+//    Renvoie NULL en cas de dépassement de capacité. Renvoie sinon un pointeur
+//    vers le contrôleur associé au DSA.
 extern dsa *dsa_empty();
 
-//  dsa_dispose : sans effet si *aptr vaut NULL, Libère sinon les ressources
-//    allouées à la gestion du DSA associé à *aptr puis affecte NULL à *aptr.
+//  dsa_dispose : Libère les ressources allouées à la gestion du DSA associé à
+//    *aptr puis affecte NULL à *aptr.
+//    Sinon sans effet si *aptr vaut NULL.
 extern void dsa_dispose(dsa **aptr);
 
 //  dsa_add : On suppose que le fichier filename est ouvert en lecture. Tente
 //    sinon de lire une ligne du filename et de l'ajouter a un tableaux
-//    dynamique de DSA et ajoute son numéro de ligne numlign au tableaux CPT,
-//    renvoie NULL en cas de dépassement de capacité ou de probleme de lecture
-//    sur le fichier; renvoie sinon le pointeur vers le tableaux.
+//    dynamique de DSA et ajoute son numéro de ligne numlign au tableaux CPT.
+//    Renvoie NULL en cas de dépassement de capacité ou de probleme de lecture
+//    sur le fichier, renvoie 1 si on est a la fin du ficher, renvoie 0 sinon;
 extern void *dsa_add_string(dsa *p, FILE *filename, size_t *numlign);
 
-//  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
-//    sinon renvoie la référence d'incide i du tableau pointé par p
+//  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
+//  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
 extern void *dsa_ref_string(dsa *p, size_t i);
 
-//  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
-//    sinon renvoie la référence d'incide i du tableau pointé par p
+//  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
+//  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
 extern void *dsa_ref_cpt(dsa *p, size_t i);
 
-//  da_length : renvoie la longueur du tableaux de caractére associée à p.
+//  da_length : Renvoie la longueur du tableaux de caractére associée à p.
 extern size_t dsa_length_string(dsa *p);
 
-//  da_length : renvoie la longueur du tableaux d'entier associée à p.
+//  da_length : Renvoie la longueur du tableaux d'entier associée à p.
 extern size_t dsa_length_int(dsa *p);
 
 #endif

@@ -26,19 +26,20 @@
 //      doivent gérer les cas de dépassement de capacité ne doivent avoir
 //      affaire avec aucun problème de la sorte.
 
-//  struct da, da : type et nom de type d'un contrôleur regroupant les
+//  struct da, da : Type et nom de type d'un contrôleur regroupant les
 //    informations nécessaires pour gérer un tableau dynamique d'objets
 //    quelconques.
 typedef struct da da;
 
-//  da_empty : tente d'allouer les ressources nécessaires pour gérer un nouveau
-//    tableau dynamique initialement vide. Renvoie NULL en cas de dépassement de
+//  da_empty : Tente d'allouer les ressources nécessaires pour gérer un nouveau
+//    tableau dynamique initialement vide.
+//    Renvoie NULL en cas de dépassement de
 //    capacité. Renvoie sinon un pointeur vers le contrôleur associé au tableau.
 extern da *da_empty();
 
-//  da_dispose : sans effet si *aptr vaut NULL, Libère sinon les ressources
-//    allouées à la gestion du tableaux dynamique associé à *aptr puis
-//    affecte NULL à *aptr.
+//  da_dispose : Libère les ressources allouées à la gestion du tableaux
+//    dynamique associé à *aptr puis affecte NULL à *aptr.
+//    Sans effet si *aptr vaut NULL,
 extern void da_dispose(da **aptr);
 
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
@@ -46,14 +47,15 @@ extern void da_dispose(da **aptr);
 //    dépassement de capacité ; renvoie sinon ref.
 extern void *da_add(da *p, const void *ref);
 
-//  da_ref : Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
-//    sinon renvoie la référence d'incide i du tableau pointé par p
+//  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
+//    Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
+//    sinon.
 extern void *da_ref(da *p, size_t i);
 
-//  da_length : renvoie la longueur du tableaux associés à p.
+//  da_length : Renvoie la longueur du tableaux associés à p.
 extern size_t da_length(da *p);
 
-//  da_capacity : renvoie la capaciter du tableaux associés à p.
+//  da_capacity : Renvoie la capaciter du tableaux associés à p.
 extern size_t da_capacity(da *p);
 
 #endif
