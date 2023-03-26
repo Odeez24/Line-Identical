@@ -45,10 +45,15 @@ extern void dsa_dispose(dsa **aptr);
 
 //  dsa_add : On suppose que le fichier filename est ouvert en lecture. Tente
 //    sinon de lire une ligne du filename et de l'ajouter a un tableaux
-//    dynamique de DSA et ajoute son numéro de ligne numlign au tableaux CPT.
-//    Renvoie NULL en cas de dépassement de capacité ou de probleme de lecture
-//    sur le fichier, renvoie 1 si on est a la fin du ficher, renvoie 0 sinon;
-extern void *dsa_add_string(dsa *p, FILE *filename, size_t *numlign);
+//    dynamique de DSA et ajoute l'entier num au tableaux CPT.
+//    Renvoie une valeur négative en cas de dépassement de capacité ou de
+//    probleme de lecture sur le fichier, renvoie une valeur positive si on est
+//    a la fin du ficher, renvoie 0 sinon;
+extern int dsa_add(dsa *p, FILE *filename, size_t *num);
+
+//  dsa_add_cpt : Ajoute cpt au tableau CPT du DSA pinter par p.
+//    Renvoie NULL en cas de dépassement de capacité, sinon renvoie cpt.
+extern void *dsa_add_cpt(dsa *p, size_t *cpt);
 
 //  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.

@@ -59,15 +59,19 @@ void dsa_dispose(dsa **aptr) {
   *aptr = NULL;
 }
 
-void *dsa_add_string(dsa *p, FILE *filename, size_t *numlign) {
-  int *r;
-  if ((*r =line(STRING(p), filename)) < 0) {
-    return NULL;
+int dsa_add(dsa *p, FILE *filename, size_t *num) {
+  int r;
+  if ((r = line(STRING(p), filename)) < 0) {
+    return -1 ;
   }
-  if (da_add(CPT(p), numlign) == NULL) {
-    return NULL;
+  if (da_add(CPT(p), num) == NULL) {
+    return -1;
   }
   return r;
+}
+
+void * dsa_add_cpt(dsa *p, size_t *cpt){
+  return da_add(CPT(p), cpt);
 }
 
 int line(da *p, FILE *filename) {
