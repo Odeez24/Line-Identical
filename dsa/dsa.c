@@ -106,6 +106,6 @@ size_t dsa_length_int(dsa *p) {
   return da_length(CPT(p));
 }
 
-da *dsa_cpt(dsa *p) {
+da *dsa_cpt(dsa *p){
   return CPT(p);
 }

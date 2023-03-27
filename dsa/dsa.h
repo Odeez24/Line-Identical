@@ -70,7 +70,6 @@ extern size_t dsa_length_string(dsa *p);
 //  dsa_length : Renvoie la longueur du tableaux d'entier associée à p.
 extern size_t dsa_length_int(dsa *p);
 
-//  dsa_cpt : Renvoie l'adresse du tableau dynamique cpt du DSA pointer par p
-extern da *dsa_cpt(dsa *p)
+void *da_cpt(dsa *p);
 
 #endif
