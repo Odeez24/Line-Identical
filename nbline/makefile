@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -std=c18 \
   -Wall -Wconversion -Werror -Wextra -Wpedantic -Wwrite-strings \
   -O2 \
-  -I$(dsa_dir) -I$(holdall_dir) -I$(hashtable_dir) \
+  -I$(dsa_dir) -I$(holdall_dir) -I$(hashtable_dir)
 vpath %.c $(dsa_dir) $(holdall_dir) $(hashtable_dir)
 vpath %.h $(dsa_dir) $(holdall_dir) $(hashtable_dir)
 objects = dsa.o main.o hashtable.o holdall.o

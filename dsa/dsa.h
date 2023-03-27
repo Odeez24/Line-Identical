@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "../da/da.h"
 
 //  Fonctionnement général :
 //  - la structure de données ne stocke pas d'objets mais des références vers
@@ -51,7 +52,7 @@ extern void dsa_dispose(dsa **aptr);
 //    a la fin du ficher, renvoie 0 sinon;
 extern int dsa_add(dsa *p, FILE *filename, size_t *num);
 
-//  dsa_add_cpt : Ajoute cpt au tableau CPT du DSA pinter par p.
+//  dsa_add_cpt : Ajoute cpt au tableau CPT du DSA pointer par p.
 //    Renvoie NULL en cas de dépassement de capacité, sinon renvoie cpt.
 extern void *dsa_add_cpt(dsa *p, size_t *cpt);
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "dsa..h"
+#include "dsa.h"
 #include "holdall.h"
 #include "hashtable.h"
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
   if (argc == 1){
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
     fprintf(stderr, "Syntaxe : %s [fichier] ou  %s [fichier1] [fichier2] ...",
-        argv[0]);
+        argv[0], argv[0]);
     return EXIT_FAILURE;
   }
   int r = EXIT_SUCCESS;
@@ -34,28 +34,31 @@ int main(int argc, char *argv[]){
       || ht == NULL) {
     goto error_capacity;
   }
-  for (k = 2; k <= argc; ++k){
-    int cpt = 1;
+  for (int k = 2; k <= argc; ++k){
     if (argc == 2) {
-      dsa *p = dsa_empty();
       FILE *f = fopen(argv[k], rb+);
-      if (p == NULL
-          || f == NULL){
+      if (f == NULL){
         goto error_capacity;
       }
+      int *cpt = 1;
       int res;
       while ((res = dsa_add(p,f,cpt)) == 0){
+        dsa *p = dsa_empty();
+        if (p == NULL){
+          goto error_capacity;
+        }
         char s[dsa_length_string(p)];
         for (size_t k = 0; k <= dsa_length_string(p); ++k){
           s[k] = dsa_ref_string(p, i);
         }
         long int *cptr = hashtable_search(ht, s);
         if (cptr != NULL) {
-
+          if (dsa_add_cpt(p, cpt) == NULL){
+            goto error_capacity;
+          }
+        }
     } else {
       }
-
-  fopen(
 
   goto dispose;
 error_capacity:
