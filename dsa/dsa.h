@@ -58,7 +58,7 @@ extern void *dsa_add_cpt(dsa *p, size_t *cpt);
 
 //  dsa_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
-extern void *dsa_ref_string(dsa *p, size_t i);
+extern char *dsa_ref_string(dsa *p, size_t i);
 
 //  dsa_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
@@ -70,6 +70,7 @@ extern size_t dsa_length_string(dsa *p);
 //  dsa_length : Renvoie la longueur du tableaux d'entier associée à p.
 extern size_t dsa_length_int(dsa *p);
 
-void *da_cpt(dsa *p);
+//  dsa_cpt : Renvoie le pointer vers le da cpt du DSA pointer par p.
+da *dsa_cpt(dsa *p);
 
 #endif

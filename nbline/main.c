@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "da.h"
 #include "dsa.h"
 #include "holdall.h"
 #include "hashtable.h"
@@ -19,6 +20,10 @@ static int scptr_display_one(const char *s, int *cpt[]);
 //    Renvoie zéro en cas de succès, une valeur non nulle en cas d'échec.
 static int scptr_display_mult(const char *s, int *cpt[]);
 
+//  rfree : libère la zone mémoire pointée par ptr et renvoie zéro.
+static int rfree(void *ptr);
+
+
 int main(int argc, char *argv[]){
   if (argc == 1){
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
@@ -36,29 +41,45 @@ int main(int argc, char *argv[]){
   }
   for (int k = 2; k <= argc; ++k){
     if (argc == 2) {
-      FILE *f = fopen(argv[k], rb+);
+      FILE *f = fopen(argv[k], "rb");
       if (f == NULL){
         goto error_capacity;
       }
-      int *cpt = 1;
+      size_t c = 1;
+      size_t *cpt = &c;
       int res;
-      while ((res = dsa_add(p,f,cpt)) == 0){
-        dsa *p = dsa_empty();
-        if (p == NULL){
+      dsa *p = dsa_empty();
+      if (p == NULL){
+          goto error_capacity;
+      }
+      while ((res = dsa_add(p,f, cpt)) == 0){
+        char *tmp[dsa_length_string(p)];
+        char *s = malloc(dsa_length_string(p));
+        if (s == NULL) {
           goto error_capacity;
         }
-        char s[dsa_length_string(p)];
         for (size_t k = 0; k <= dsa_length_string(p); ++k){
-          s[k] = dsa_ref_string(p, i);
+          tmp[k] = dsa_ref_string(p, k);
         }
-        long int *cptr = hashtable_search(ht, s);
+        strcpy(s, *tmp);
+        da *cptr = hashtable_search(ht, s);
         if (cptr != NULL) {
           if (dsa_add_cpt(p, cpt) == NULL){
             goto error_capacity;
           }
+        } else {
+          if (holdall_put(has, s) != 0) {
+            free(s);
+            goto error_capacity;
+          }
+          cptr = dsa_cpt(p);
+          if (hashtable_add(ht, s, cptr) == NULL) {
+            goto error_capacity;
+          }
         }
-    } else {
       }
+    }
+  }
 
   goto dispose;
 error_capacity:
@@ -75,7 +96,6 @@ error:
   goto dispose;
 dispose:
   hashtable_dispose(&ht);
-  dsa_dispose(&q);
   if (has != NULL) {
     holdall_apply(has, rfree);
   }
@@ -89,4 +109,9 @@ size_t str_hashfun(const char *s) {
     h = 37 * h + *p;
   }
   return h;
+}
+
+int rfree(void *ptr) {
+  free(ptr);
+  return 0;
 }

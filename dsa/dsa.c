@@ -2,6 +2,7 @@
 //    d'un module utilisant des tableaux dynamique pour enregistrer une chaîne
 //    de caractére et des entiers naturels positif que l'on nommera DSA.
 
+#include <string.h>
 #include "../da/da.h"
 #include "dsa.h"
 #include "stdint.h"
@@ -70,14 +71,19 @@ int dsa_add(dsa *p, FILE *filename, size_t *num) {
   return r;
 }
 
-void * dsa_add_cpt(dsa *p, size_t *cpt){
+void *dsa_add_cpt(dsa *p, size_t *cpt){
   return da_add(CPT(p), cpt);
 }
 
 int line(da *p, FILE *filename) {
   int c;
   while ((c = fgetc(filename)) != EOF || c != '\n') {
-    if (da_add(p, &c) == NULL) {
+    char *s = malloc (sizeof *s);
+    if (s == NULL) {
+      return -1;
+    }
+    *s = c;
+    if (da_add(p, s) == NULL) {
       return -1;
     }
   }
@@ -90,7 +96,7 @@ int line(da *p, FILE *filename) {
   return 1;
 }
 
-void *dsa_ref_string(dsa *p, size_t i) {
+char *dsa_ref_string(dsa *p, size_t i) {
   return da_ref(STRING(p), i);
 }
 
