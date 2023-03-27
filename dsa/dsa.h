@@ -56,18 +56,21 @@ extern int dsa_add(dsa *p, FILE *filename, size_t *num);
 //    Renvoie NULL en cas de dépassement de capacité, sinon renvoie cpt.
 extern void *dsa_add_cpt(dsa *p, size_t *cpt);
 
-//  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
+//  dsa_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
 extern void *dsa_ref_string(dsa *p, size_t i);
 
-//  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
+//  dsa_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //  Renvoie NULL si p est vide ou si i est supérieur a la longueur de p.
 extern void *dsa_ref_cpt(dsa *p, size_t i);
 
-//  da_length : Renvoie la longueur du tableaux de caractére associée à p.
+//  dsa_length : Renvoie la longueur du tableaux de caractére associée à p.
 extern size_t dsa_length_string(dsa *p);
 
-//  da_length : Renvoie la longueur du tableaux d'entier associée à p.
+//  dsa_length : Renvoie la longueur du tableaux d'entier associée à p.
 extern size_t dsa_length_int(dsa *p);
+
+//  dsa_cpt : Renvoie l'adresse du tableau dynamique cpt du DSA pointer par p
+extern da *dsa_cpt(dsa *p)
 
 #endif
