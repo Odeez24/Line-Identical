@@ -52,6 +52,12 @@ extern void *da_add(da *p, const void *ref);
 //    sinon.
 extern void *da_ref(da *p, size_t i);
 
+//  da_mod_ref : Modifie la valeur de la case d'indice i du tableau dynamique
+//    pointer par p par ref.
+//    Renvoie NULL si ref vaut, si i est supérieur a la longueur de p ou si vaut
+//    null sinon renvoie ref.
+extern void *da_mod_ref(da *p, size_t i, void * ref);
+
 //  da_length : Renvoie la longueur du tableaux associés à p.
 extern size_t da_length(da *p);
 

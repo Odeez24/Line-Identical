@@ -81,6 +81,20 @@ void *da_ref(da *p, size_t i) {
   return (void *) v;
 }
 
+void *da_mod_ref(da *p, size_t i, void * ref){
+  if (p == NULL) {
+    return NULL;
+  }
+  if (i > LENGTH(p)) {
+    return NULL;
+  }
+  if (ref == NULL) {
+    return NULL;
+  }
+  p->aref[i] = ref;
+  return ref;
+}
+
 size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
 }

@@ -62,11 +62,11 @@ void dsa_dispose(dsa **aptr) {
 
 int dsa_add(dsa *p, FILE *filename, size_t *num) {
   int r;
-  if ((r = line(STRING(p), filename)) < 0) {
-    return -1 ;
+  if (line(STRING(p), filename) < 0) {
+    return -1;
   }
   if (da_add(CPT(p), num) == NULL) {
-    return -1;
+    return -1;;
   }
   return r;
 }
@@ -82,19 +82,29 @@ int line(da *p, FILE *filename) {
     if (s == NULL) {
       return -1;
     }
-    *s = c;
+    *s = (char)c;
     if (da_add(p, s) == NULL) {
       return -1;
     }
   }
-  if (c == '\n') {
-    return 0;
-  }
-  if (!feof(filename)) {
+  char *s = malloc (sizeof *s);
+  if (s == NULL) {
     return -1;
   }
-  return 1;
+  c = '\0';
+  *s = (char) c;
+  if (da_add(p, s) == NULL) {
+      return -1;
+  }
+  if (ferror(filename) != 0){
+    return -1;
+  }
+  if (c == '\n' && feof(filename) == 0){
+    return 1;
+  }
+  return 0;
 }
+
 
 char *dsa_ref_string(dsa *p, size_t i) {
   return da_ref(STRING(p), i);
