@@ -21,11 +21,11 @@ struct opt {
 
 //  est_prefixe : Test si la chaîne de caractére pointer par s1 est un prefixe
 //    de celle pointer par s2.
-bool est_prefixe(const char *s1, const char *s2){
-  if (s1 == '\0'){
+bool est_prefixe(const char *s1, const char *s2) {
+  if (*s1 == '\0'){
     return true;
   }
-  if (s2 == '\0' || *s1 != *s2){
+  if (*s2 == '\0' || *s1 != *s2){
     return false;
   }
   return est_prefixe(s1 + 1, s2 + 1);
@@ -33,7 +33,8 @@ bool est_prefixe(const char *s1, const char *s2){
 
 //--- Fonctions opt ------------------------------------------------------------
 
-opt *opt_gen(const char *shortopt, const char *longopt, const char *desc, bool arg){
+opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
+  bool arg) {
   opt *op = malloc (sizeof *op);
   if (op == NULL){
     return NULL;
@@ -45,10 +46,31 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc, bool a
   return op;
 }
 
+#define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s : \n\t%s\n", opta->shortopt, \
+  (opta->arg ? " [option]" : ""), opta->longopt,                               \
+  (opta->arg ? "=[option]" : ""), opta->desc);                                 \
+
+#define SHORTHELP "-h"
+#define LONGHELP "--help"
 
 
-returnopt opt_parse(int argc, const char *argv, char *optsupp, char *other,
-              char *optlist){
+returnopt opt_parse(int argc, const char **argv, char *optsupp, size_t nbopt,
+  void *cntxt, const char *desc, const char *usage){
   if (argc <= 2){
     return NO_OPT;
   }
+  for (int k = 1; k < argc; ++k){
+    if (strcmp(SHORTHELP, argv[k]) == 0 || strcmp(LONGHELP, argv[k]) == 0){
+      if (desc != NULL){
+        printf("%s\n", desc);
+      }
+      if (usage != NULL){
+        printf("%s\n", usage);
+      }
+      for (size_t i = 0; i < nbopt; ++i){
+        PRINTF_OPT(optsupp[i]);
+        return HELP;
+      }
+    }
+  }
+}

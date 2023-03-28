@@ -78,44 +78,6 @@ void *da_add(da *p, const void *ref) {
   return (void *) ref;
 }
 
-int da_add_line(da *p, FILE *filename) {
-  int r;
-  if ((r = line(p, filename)) < 0) {
-    return r;
-  }
-  return r;
-}
-
-int line(da *p, FILE *filename) {
-  int c;
-  while ((c = fgetc(filename)) != EOF || c != '\n') {
-    char *s = malloc (sizeof *s);
-    if (s == NULL) {
-      return -1;
-    }
-    *s = (char)c;
-    if (da_add(p, s) == NULL) {
-      return -1;
-    }
-  }
-  char *s = malloc (sizeof *s);
-  if (s == NULL) {
-    return -1;
-  }
-  c = '\0';
-  *s = (char) c;
-  if (da_add(p, s) == NULL) {
-      return -1;
-  }
-  if (ferror(filename) != 0){
-    return -1;
-  }
-  if (c == '\n' && feof(filename) == 0){
-    return 1;
-  }
-  return 0;
-}
-
 void *da_ref(da *p, size_t i) {
   if (p == NULL) {
     return NULL;
@@ -127,7 +89,7 @@ void *da_ref(da *p, size_t i) {
   return (void *) v;
 }
 
-void *da_mod_ref(da *p, size_t i, void * ref){
+void *da_mod_ref(da *p, size_t i, void *ref) {
   if (p == NULL) {
     return NULL;
   }

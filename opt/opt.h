@@ -6,18 +6,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-
+#include <string.h>
 
 //  struct opt opt : type et nom d'un contorleur regroupant les informations
 //    nécessaires pour gérer une option
 typedef struct opt opt;
-
 
 //  returnopt : énumération des différente valeur de retour des fonction du
 //    module opt
 typedef enum {
   NO_OPT,
   ERR_OPT,
+  ERR_TRANS,
+  HELP,
   SUCCESS,
 } returnopt;
 
@@ -26,8 +27,8 @@ typedef enum {
 //    paramétre.
 //    Renvoie NULL en cas de dépassement de capacité, sinon renvoie un pointer
 //    vers la zone méoire allouer
-extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc);
-
+extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
+    bool arg);
 
 //  opt_parse : Prend en paramétre les nombre d'argument passer ainsi que le
 //    tableau contenant les arguments  et les sépares dans deux tableaux passer
@@ -36,7 +37,7 @@ extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc)
 //    optlist, le reste sera mis dans le tableaux other.
 //    Renvoie ERR_OPT en cas probléme de lecture, NO_OPT si il n'y a pas
 //    d'option passer en argument, SUCCESS sinon.
-extern returnopt opt_parse(int argc, const char *argv, char *optsupp,
-  char *other, char *optlist);
+extern returnopt opt_parse(int argc, const char *argv, opt *optsupp,
+  void *cntxt, const char *desc, const char *usage);
 
 #endif
