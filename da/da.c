@@ -7,7 +7,7 @@
 #define DA__CAPACITY_MIN 1
 #define DA__CAPACITY_MUL 2
 
-//--- Définition da ----------------------------------------------------------
+//--- Définition da ------------------------------------------------------------
 
 struct da {
   const void **aref;
@@ -19,6 +19,14 @@ struct da {
 #define IS_EMPTY(p)    ((p)->length == 0)
 #define LENGTH(p)      ((p)->length)
 #define CAPACITY(p)    ((p)->capacity)
+
+//--- Fonction interne ---------------------------------------------------------
+//  line : Ajoute une ligne du fichier filename au tableaux dynamique pointer
+//    par p.
+//    Renvoie une valeur négative en cas de dépassement de capacité ou de
+//    probleme de lecture ou une valeur positive si on arrive a la fin du
+//    fichier la valeur null sinon.
+int line(da *p, FILE *filename);
 
 //--- Fonctions da -------------------------------------------------------------
 
@@ -68,6 +76,44 @@ void *da_add(da *p, const void *ref) {
   p->aref[LENGTH(p)] = ref;
   LENGTH(p) += 1;
   return (void *) ref;
+}
+
+int da_add_line(da *p, FILE *filename) {
+  int r;
+  if ((r = line(p, filename)) < 0) {
+    return r;
+  }
+  return r;
+}
+
+int line(da *p, FILE *filename) {
+  int c;
+  while ((c = fgetc(filename)) != EOF || c != '\n') {
+    char *s = malloc (sizeof *s);
+    if (s == NULL) {
+      return -1;
+    }
+    *s = (char)c;
+    if (da_add(p, s) == NULL) {
+      return -1;
+    }
+  }
+  char *s = malloc (sizeof *s);
+  if (s == NULL) {
+    return -1;
+  }
+  c = '\0';
+  *s = (char) c;
+  if (da_add(p, s) == NULL) {
+      return -1;
+  }
+  if (ferror(filename) != 0){
+    return -1;
+  }
+  if (c == '\n' && feof(filename) == 0){
+    return 1;
+  }
+  return 0;
 }
 
 void *da_ref(da *p, size_t i) {

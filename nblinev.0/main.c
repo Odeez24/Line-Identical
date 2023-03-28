@@ -3,7 +3,6 @@
 #include "da.h"
 #include "holdall.h"
 #include "hashtable.h"
-#include "opt.h"
 
 //  str_hashfun : l'une des fonctions de pré-hachage conseillées par Kernighan
 //    et Pike pour les chaines de caractères.
@@ -23,18 +22,6 @@ static int scptr_display_mult(const char *s, da *cpt);
 //  rfree : libère la zone mémoire pointée par ptr et renvoie zéro.
 static int rfree(void *ptr);
 
-//--- Création des options -----------------------------------------------------
-
-#define SUPPOPT_LENGHT  3
-
-#define SUPPOPT                                                                /
-  opt_gen("-u", "--uppercase",                                                 /
-    "Met tous les caractéres enregistrer en majuscule", false);                /
-  opt_gen("-l", "--lowercase",                                                 /
-    "Met tous les caractéres enregistrer en minuscule", false);                /
-  opt_gen("-f", "--filter",                                                    /
-    "Applique le filtre passer en argument", false);                           /
-
 
 int main(int argc, char *argv[]){
   if (argc == 1){
@@ -47,13 +34,119 @@ int main(int argc, char *argv[]){
   holdall *has = holdall_empty();
   hashtable *ht = hashtable_empty((int (*)(const void *, const void *))strcmp,
       (size_t (*)(const void *))str_hashfun);
-
   if (has == NULL
       || ht == NULL) {
     goto error_capacity;
   }
+  for (size_t k = 1; (int)k < argc; ++k){
+    da *p = da_empty();
+    if (p == NULL){
+      goto error_capacity;
+    }
+    printf("%s\n", argv[1]);
+    FILE *f = fopen(argv[k], "rb");
+    if (f == NULL){
+      goto error_file;
+    }
+    if (argc <= 2) {
+      size_t c = 1;
+      size_t *cpt = &c;
+      int res;
+      while ((res = da_add_line(p,f) == 0){
+        char *tmp[da_length(p)];
+        char *s = malloc(da_length(p));
+        if (s == NULL) {
+          goto error_capacity;
+        }
+        for (size_t k = 0; k <= da_length(p); ++k){
+          tmp[k] = da_ref(p, k);
+        }
+        strcpy(s, *tmp);
+        da *cptr = hashtable_search(ht, s);
+        if (cptr != NULL) {
+          if (argc == 2) {
+            if (da_add(p, cpt) == NULL){
+              goto error_capacity;
+            }
+          } else {
+            cptr = dsa_cpt(p);
+            ++(*cpt);
+            if (da_mod_ref(cptr, 0, cpt) == NULL){
+              goto error_write;
+            }
+          }
+        } else {
+          if (holdall_put(has, s) != 0) {
+            free(s);
+            goto error_capacity;
+          }
+          cptr = dsa_cpt(p);
+          if (hashtable_add(ht, s, cptr) == NULL) {
+            goto error_capacity;
+          }
+        }
+        if (argc == 2) {
+          ++(*cpt);
+        }
+        da_dispose(&p);
+        dsa *p = da_empty();
+        if (p == NULL){
+          goto error_capacity;
+        }
+      }
+      if (r < 0){
+        goto error_read;
+      }
+    } else {
+      size_t c = 0;
+      size_t *cpt = &c;
+      int res;
+      while ((res = da_add(p, f, cpt)) == 0){
+        char *tmp[da_length(p)];
+        for (size_t k = 0; k <= dsa_length_string(p); ++k){
+          tmp[k] = dsa_ref_string(p, k);
+        }
+        char *s = malloc(dsa_length_string(p));
+        if (s == NULL) {
+          goto error_capacity;
+        }
+        strcpy(s, *tmp);
+        da *cptr = hashtable_search(ht, s);
+        if (cptr != NULL) {
+          cptr = dsa_cpt(p);
+          ++(*cpt);
+          if (da_mod_ref(cptr, k - 2, cpt) == NULL){
+            goto error_write;
+          }
+        }
+        dsa_dispose(&p);
+        dsa *p = dsa_empty();
+        if (p == NULL){
+          goto error_capacity;
+        }
+      }
 
-
+      if (r < 0){
+        goto error_read;
+      }
+    }
+    if (fclose(f) < 0){
+      goto error_read;
+    }
+  }
+  if (argc == 2){
+    if (holdall_apply_context(has,
+        ht, (void *(*)(void *, void *))hashtable_search,
+        (int (*)(void *, void *))scptr_display_one) != 0){
+      goto error_write;
+    }
+  } else {
+    if (holdall_apply_context(has, ht,
+        (void *(*)(void *, void *))hashtable_search,
+        (int (*)(void *, void *))scptr_display_mult) != 0){
+      goto error_write;
+    }
+  }
   goto dispose;
 error_capacity:
   fprintf(stderr, "*** Error: Not enough memory\n");
