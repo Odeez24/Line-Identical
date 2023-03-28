@@ -69,8 +69,8 @@ returnopt opt_parse(int argc, const char **argv, char *optsupp, size_t nbopt,
       }
       for (size_t i = 0; i < nbopt; ++i){
         PRINTF_OPT(optsupp[i]);
-        return HELP;
       }
+      return HELP;
     }
   }
 }
