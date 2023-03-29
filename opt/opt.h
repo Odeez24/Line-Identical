@@ -37,7 +37,8 @@ extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 //    optlist, le reste sera mis dans le tableaux other.
 //    Renvoie ERR_OPT en cas probléme de lecture, NO_OPT si il n'y a pas
 //    d'option passer en argument, SUCCESS sinon.
-extern returnopt opt_parse(int argc, const char *argv, opt *optsupp,
-  void *cntxt, const char *desc, const char *usage);
+extern returnopt opt_parse(int argc, const char **argv, opt **optsupp,
+  size_t nbopt, void *cntxt, const char *desc, const char *usage,
+   void * (*fun) (void *, void *));
 
 #endif

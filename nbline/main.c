@@ -13,21 +13,16 @@
   "fichier, les numéros des lignes où elle apparaissent et le contenu de la "  \
   "ligne. "                                                                    \
   "Si au moins deux noms de fichiers en argument sur la ligne de commande, "   \
-  "affiche pour chaque ligne de texte non vide apparaissant au moins une fois " \
+  "affiche pour chaque ligne de texte non vide apparaissant au moins une fois "\
   "dans tous les fichiers, le nombre d’occurrences de la ligne dans chacun "   \
   "des fichiers et le contenu de la ligne."                                    \
 
-#defini USAGE "Syntaxe : \lnid [fichier] or  \lnid [fichier1] [fichier2] ...\n"
+#define USAGE "Syntaxe : \lnid [fichier] or  \lnid [fichier1] [fichier2] ...\n"
 
 //--- Création des options -----------------------------------------------------
 
 #define SUPPOPT_LENGHT  2
 
-#define SUPPOPT                                                                \
-  opt_gen("-u", "--uppercase",                                                 \
-    "Met tous les caractéres enregistrer en majuscule", false);                \
-  opt_gen("-f", "--filter",                                                    \
-    "Applique le filtre passer en argument", false);                           \
 
 //--- Gestion des arguments ----------------------------------------------------
 
@@ -68,25 +63,27 @@ int addline(da *p, FILE *filename);
 //    Renvoie une valeur négative en cas d'erreur, zéro sinon.
 int addfile(da *p, const char *filename);
 
-int main(int argc, char **argv[]) {
+int main(int argc, char *argv[]) {
   if (argc == 1) {
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
-    printf("%s", USAGE);
+    printf("Syntaxe : \lnid [fichier] or  \lnid [fichier1] [fichier2] ...\n");
     return EXIT_FAILURE;
   }
-  opt *suppopt[] = {
-    SUPPOPT;
-  }
+  opt *opt1 = opt_gen("-u", "--uppercase",
+    "Met tous les caractéres enregistrer en majuscule", false);
+  opt *opt2 = opt_gen("-f", "--filter",
+    "Applique le filtre passer en argument", false);
+  opt **suppopt[] = {opt1, opt2};
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
   holdall *has = holdall_empty();
   holdall *hascpt = holdall_empty();
   hashtable *ht = hashtable_empty((int (*)(const void *, const void *))strcmp,
       (size_t (*)(const void *))str_hashfun);
-  if (has == NULL || ht == NULL || hascpt == NULL || filelist ||) {
+  if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL) {
     goto error_capacity;
   }
-  cxnt cntxt {
+  cxnt cntxt = {
     .filelist = filelist, filter = NULL, transform = NULL
   };
   goto dispose;

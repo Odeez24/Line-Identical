@@ -1,0 +1,23 @@
+./opt.c: In function ‘opt_parse’:
+./opt.c:72:57: error: invalid type argument of ‘->’ (have ‘opt’)
+   72 |         printf("\t%s%s\t or %s%s : \n\t%s\n", optsupp[i]->shortopt,
+      |                                                         ^~
+./opt.c:73:14: error: invalid type argument of ‘->’ (have ‘opt’)
+   73 |   (optsupp[i]->arg ? " [option]" : ""), optsupp[i]->longopt,
+      |              ^~
+./opt.c:73:51: error: invalid type argument of ‘->’ (have ‘opt’)
+   73 |   (optsupp[i]->arg ? " [option]" : ""), optsupp[i]->longopt,
+      |                                                   ^~
+./opt.c:74:14: error: invalid type argument of ‘->’ (have ‘opt’)
+   74 |   (optsupp[i]->arg ? "=[option]" : ""), optsupp[i]->desc);
+      |              ^~
+./opt.c:74:51: error: invalid type argument of ‘->’ (have ‘opt’)
+   74 |   (optsupp[i]->arg ? "=[option]" : ""), optsupp[i]->desc);
+      |                                                   ^~
+./opt.c:58:9: error: unused parameter ‘cntxt’ [-Werror=unused-parameter]
+   58 |   void *cntxt, const char *desc, const char *usage){
+      |   ~~~~~~^~~~~
+./opt.c:79:1: error: control reaches end of non-void function [-Werror=return-type]
+   79 | }
+      | ^
+cc1: all warnings being treated as errors
