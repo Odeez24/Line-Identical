@@ -9,38 +9,55 @@ struct opt {
   const char *longopt;
   const char *desc;
   bool arg;
-  int (*fun) (void *);
+  int (*fun) (const void *,const void *);
 };
 
-//--- Raccourcis opt -----------------------------------------------------------
-#define SHORT(op)   ((op)->shortopt);
-#define LONG(op)    ((op)->longopt);
-#define DESC(op)    ((op)->desc);
-#define ARG(op)     ((op)->arg);
 
 //--- Fonction interne ---------------------------------------------------------
 
 //  est_prefixe : Test si la chaîne de caractére pointer par s1 est un prefixe
 //    de celle pointer par s2.
-static bool est_prefixe(const char *s1, const char *s2) {
+//    Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie le reste de
+//    s2 qui n'est pas dans s1
+static const char * est_prefixe(const char *s1, const char *s2) {
   if (*s1 == '\0'){
-    return true;
+    return s2;
   }
   if (*s2 == '\0' || *s1 != *s2){
-    return false;
+    return NULL;
   }
   return est_prefixe(s1 + 1, s2 + 1);
 }
 
-static int opt_test(*funopt, opt **optsupp, size_t nbopt) {
+const char *opt_select(opt *optsupp, const char **argv, size_t k) {
+  if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
+    return argv[k + 1];
+  } else if (strcmp(optsupp->longopt, argv[k]) == 0 && optsupp->arg){
+    return est_prefixe(optsupp->longopt, argv[k]);
+  }
+  return argv[k];
+}
 
+
+static int opt_test(void * cntxt, opt **optsupp, const char **argv, size_t k,
+  size_t nbopt) {
+  for (size_t i = 0; i < nbopt; ++i){
+    if (strcmp((optsupp[i])->shortopt, argv[k]) == 0
+      || strcmp((optsupp[i])->longopt, argv[k]) == 0) {
+      if ((optsupp[i]->fun (cntxt, (opt_select(optsupp[i], argv, k)))) != 0){
+        return -1;
+      }
+    }
+  }
+  return 0;
+}
 
 //--- Fonctions opt ------------------------------------------------------------
 
 
 
 opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
-  bool arg) {
+  bool arg, int (*fun) (const void *,const void *)) {
   opt *op = malloc (sizeof *op);
   if (op == NULL){
     return NULL;
@@ -49,6 +66,7 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
   op->longopt = longopt;
   op->desc = desc;
   op->arg = arg;
+  op->fun = fun;
   return op;
 }
 
@@ -60,7 +78,7 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 #define LONGHELP "--help"
 
 
-returnopt opt_parse(int argc, const char **argv, opt **optsupp, size_t nbopt,
+returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
   void *cntxt, const char *desc, const char *usage,
   void * (*fun) (void *, void *)){
   if (argc <= 2){
@@ -72,17 +90,16 @@ returnopt opt_parse(int argc, const char **argv, opt **optsupp, size_t nbopt,
         printf("%s\n", desc);
       }
       if (usage != NULL){
-        printf("%s\n", usage);
+        printf("%s", usage);
       }
       for (size_t i = 0; i < nbopt; ++i){
         PRINTF_OPT(optsupp[i]);
       }
       return HELP;
     }
-    for (size_t i = 0; i < nbopt) {
-      if (strcmp(optsupp[i], argv[k]) == 0
-        || strcmp([optsupp[i], argv[k]) == 0) {
-      cntxt->
-
+    if (opt_test(cntxt, optsupp, argv, k, nbopt) != 0){
+      return ERR_OPT;
+    }
   }
+  return SUCCESS;
 }

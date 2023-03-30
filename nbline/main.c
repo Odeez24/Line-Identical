@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "da.h"
 #include "holdall.h"
 #include "hashtable.h"
@@ -13,16 +14,15 @@
   "fichier, les numéros des lignes où elle apparaissent et le contenu de la "  \
   "ligne. "                                                                    \
   "Si au moins deux noms de fichiers en argument sur la ligne de commande, "   \
-  "affiche pour chaque ligne de texte non vide apparaissant au moins une fois "\
-  "dans tous les fichiers, le nombre d’occurrences de la ligne dans chacun "   \
-  "des fichiers et le contenu de la ligne."                                    \
+  "affich#include <ctype.h>e pour chaque ligne de texte non vide apparaissant" \
+  "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
+  "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
 
-#define USAGE "Syntaxe : \lnid [fichier] or  \lnid [fichier1] [fichier2] ...\n"
+#define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ..."
 
 //--- Création des options -----------------------------------------------------
 
-#define SUPPOPT_LENGHT  2
-
+#define NBOPTION 2
 
 //--- Gestion des arguments ----------------------------------------------------
 
@@ -63,16 +63,21 @@ int addline(da *p, FILE *filename);
 //    Renvoie une valeur négative en cas d'erreur, zéro sinon.
 int addfile(da *p, const char *filename);
 
+int filter_choose (cnxt *cntxt, const char *s);
+
+int transform_choose (cnxt* cntxt, const char *s);
+
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
-    printf("Syntaxe : \lnid [fichier] or  \lnid [fichier1] [fichier2] ...\n");
+    printf(USAGE, argv[0], argv[0]);
     return EXIT_FAILURE;
   }
   opt *opt1 = opt_gen("-u", "--uppercase",
-    "Met tous les caractéres enregistrer en majuscule", false);
-  opt *opt2 = opt_gen("-f", "--filter",
-    "Applique le filtre passer en argument", false);
+    "Met tous les caractéres enregistrer en majuscule", false,
+      transform_choose);
+  opt *opt2 = opt_gen("-f", "--filter=",
+    "Applique le filtre passer en argument", false, filter_choose);
   opt **suppopt[] = {opt1, opt2};
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
@@ -172,4 +177,64 @@ int addline(da *p, FILE *filename) {
     return 1;
   }
   return 0;
+}
+
+int transform_choose (cnxt* cntxt, const char *s){
+  if (strcmp("-u", s) == 0 || strcmp("--uppercase", s) == 0){
+    cntxt->transform = toupper;
+    return 0;
+  }
+  return -1;
+}
+
+int filter_choose (cnxt *cntxt, const char *s) {
+  if (strcmp("isalnum", s) == 0){
+    cntxt->filter = isalnum;
+    return 0;
+  }
+  if (strcmp("isalpha", s) == 0){
+    cntxt->filter = isalpha;
+    return 0;
+  }
+  if (strcmp("isblank", s) == 0){
+    cntxt->filter = isblank;
+    return 0;
+  }
+  if (strcmp("iscntrl", s) == 0){
+    cntxt->filter = iscntrl;
+    return 0;
+  }
+  if (strcmp("isdigit", s) == 0){
+    cntxt->filter = isdigit;
+    return 0;
+  }
+  if (strcmp("isgraph", s) == 0){
+    cntxt->filter = isgraph;
+    return 0;
+  }
+  if (strcmp("islower", s) == 0){
+    cntxt->filter = islower;
+    return 0;
+  }
+  if (strcmp("isprint", s) == 0){
+    cntxt->filter = isprint;
+    return 0;
+  }
+  if (strcmp("ispunct", s) == 0){
+    cntxt->filter = ispunct;
+    return 0;
+  }
+  if (strcmp("isspace", s) == 0){
+    cntxt->filter = isspace;
+    return 0;
+  }
+  if (strcmp("isupper", s) == 0){
+    cntxt->filter = isupper;
+    return 0;
+  }
+  if (strcmp("isxdigit", s) == 0){
+    cntxt->filter = isxdigit;
+    return 0;
+  }
+  return -1;
 }
