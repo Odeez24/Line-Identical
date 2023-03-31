@@ -17,7 +17,7 @@ typedef struct opt opt;
 typedef enum {
   NO_OPT,
   ERR_OPT,
-  ERR_T,
+  ERR_ADD,
   HELP,
   SUCCESS,
 } returnopt;
@@ -39,6 +39,6 @@ extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 //    d'option passer en argument, SUCCESS sinon.
 extern returnopt opt_init(int argc, const char **argv, opt **optsupp,
   size_t nbopt, void *cntxt, const char *desc, const char *usage,
-   void * (*fun) (void *, void *));
+   void * (*fun) (void *, const void *));
 
 #endif

@@ -29,7 +29,7 @@ static const char * est_prefixe(const char *s1, const char *s2) {
   return est_prefixe(s1 + 1, s2 + 1);
 }
 
-const char *opt_select(opt *optsupp, const char **argv, size_t k) {
+const char *opt_select(opt *optsupp, const char **argv, int k) {
   if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
     return argv[k + 1];
   } else if (strcmp(optsupp->longopt, argv[k]) == 0 && optsupp->arg){
@@ -39,15 +39,21 @@ const char *opt_select(opt *optsupp, const char **argv, size_t k) {
 }
 
 
-static int opt_test(void * cntxt, opt **optsupp, const char **argv, size_t k,
+static int opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
   size_t nbopt) {
+  size_t nb = 0;
   for (size_t i = 0; i < nbopt; ++i){
     if (strcmp((optsupp[i])->shortopt, argv[k]) == 0
       || strcmp((optsupp[i])->longopt, argv[k]) == 0) {
       if ((optsupp[i]->fun (cntxt, (opt_select(optsupp[i], argv, k)))) != 0){
         return -1;
       }
+    } else {
+      ++nb;
     }
+  }
+  if (nb == nbopt) {
+    return 1;
   }
   return 0;
 }
@@ -72,7 +78,7 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 
 #define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s : \n\t%s\n", opta->shortopt, \
   (opta->arg ? " [option]" : ""), opta->longopt,                               \
-  (opta->arg ? "=[option]" : ""), opta->desc);                                 \
+  (opta->arg ? "[option]" : ""), opta->desc);                                 \
 
 #define SHORTHELP "-h"
 #define LONGHELP "--help"
@@ -80,7 +86,7 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 
 returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
   void *cntxt, const char *desc, const char *usage,
-  void * (*fun) (void *, void *)){
+  void *(*fun) (void *, const void *)){
   if (argc <= 2){
     return NO_OPT;
   }
@@ -97,8 +103,16 @@ returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
       }
       return HELP;
     }
-    if (opt_test(cntxt, optsupp, argv, k, nbopt) != 0){
-      return ERR_OPT;
+
+    int res;
+    if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != 0){
+      if (res > 0) {
+        if (fun(cntxt, argv[k]) == NULL){
+          return ERR_ADD;
+        }
+      } else if (res < 0) {
+        return ERR_OPT;
+      }
     }
   }
   return SUCCESS;

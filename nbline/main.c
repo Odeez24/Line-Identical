@@ -60,8 +60,8 @@ int addline(da *p, FILE *filename);
 
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
-//    Renvoie une valeur négative en cas d'erreur, zéro sinon.
-int addfile(da *p, const char *filename);
+//    Renvoie NULL en cas de dépassement de capacité, filename sinon.
+void * addfile(da *p, const char *filename);
 
 int filter_choose (cnxt *cntxt, const char *s);
 
@@ -91,6 +91,49 @@ int main(int argc, char *argv[]) {
   cxnt cntxt = {
     .filelist = filelist, filter = NULL, transform = NULL
   };
+  returnopt res;
+  if ((res =opt_init(argc, argv, suppopt, NBOPTION, cntxt,
+    DESC, USAGE, addfile)) != SUCCESS) {
+    if (res == HELP){
+      goto dispose;
+    }
+    if (res == ERR_ADD) {
+      goto error_capacity;
+    }
+    if (res == ERR_OPT) {
+      fprintf(stderr, "*** Error: Bad argument for option\n");
+      goto error;
+    }
+    if (res == NO_OPT) {
+      for (int k = 1; k < argc; ++k) {
+        if (addfile(cntxt->filelist, argv[k]) == NULL) {
+          goto error_capacity;
+        }
+      }
+    }
+  }
+  size_t len = da_length(cntxt->filelist);
+  for (size_t k = 0; k < len; ++k) {
+    FILE *f = fopen(da_ref(cntxt->filelist, k), "rb");
+    da *line = da_empty();
+    da *cpt = da_empty();
+    if (line == NULL || cpt == NULL || f == NULL) {
+      if (f == NULL){
+        goto error_file;
+       }
+      goto error_capacity;
+    }
+    if (k == 0) {
+    while (addline(line,f,cntxt) != 0) {
+      char *tmp[da_length(line)];
+      char *s = malloc(da_length(p));
+      if (s == NULL) {
+        goto error_capacity;
+      }
+      for (size_t k = 0; k <= da_length(p); ++k){
+        tmp[k] = da_ref(p, k);
+      }
+      strcpy(s, &tmp);
   goto dispose;
 error_capacity:
   fprintf(stderr, "*** Error: Not enough memory\n");
@@ -149,27 +192,22 @@ int rfree(void *ptr) {
   return 0;
 }
 
-int addline(da *p, FILE *filename) {
+
+int addline(da *p, FILE *filename, cnxt *cntxt) {
   int c;
   while ((c = fgetc(filename)) != EOF || c != '\n') {
-    char *s = malloc(sizeof *s);
-    if (s == NULL) {
-      return -1;
+    if (cntxt->filter == NULL || cntxt->filter(c) != 0){
+      char *s = malloc(sizeof *s);
+      if (s == NULL) {
+        return -1;
+      }
+      *s = (char) c;
+      if (da_add(p, s) == NULL) {
+        return -1;
+      }
     }
-    *s = (char) c;
-    if (da_add(p, s) == NULL) {
-      return -1;
-    }
-  }
-  char *s = malloc(sizeof *s);
-  if (s == NULL) {
-    return -1;
   }
   c = '\0';
-  *s = (char) c;
-  if (da_add(p, s) == NULL) {
-    return -1;
-  }
   if (ferror(filename) != 0) {
     return -1;
   }
@@ -177,6 +215,16 @@ int addline(da *p, FILE *filename) {
     return 1;
   }
   return 0;
+}
+
+void * addfile(da *p, const char *filename) {
+  if (p == NULL){
+    return NULL;
+  }
+  if (da_add(p, filename) == NULL){
+    return NULL;
+  }
+  return (char *) filename;
 }
 
 int transform_choose (cnxt* cntxt, const char *s){

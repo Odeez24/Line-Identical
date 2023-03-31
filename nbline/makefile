@@ -9,7 +9,7 @@ CFLAGS = -std=c18 \
   -I$(da_dir) -I$(holdall_dir) -I$(hashtable_dir) -I$(opt_dir)
 vpath %.c $(da_dir) $(holdall_dir) $(hashtable_dir) $(opt_dir)
 vpath %.h $(da_dir)  $(holdall_dir) $(hashtable_dir) $(opt_dir)
-objects = da.o dsa.o main.o hashtable.o holdall.o opt.o
+objects = da.o main.o hashtable.o holdall.o opt.o
 executable = lnid
 makefile_indicator = .\#makefile\#
 
