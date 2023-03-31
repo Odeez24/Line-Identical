@@ -6,6 +6,8 @@
 #include "hashtable.h"
 #include "opt.h"
 
+#define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
+
 //--- MACRO --------------------------------------------------------------------
 
 #define DESC                                                                   \
@@ -93,7 +95,7 @@ int main(int argc, const char *argv[]) {
     .filelist = filelist, .filter = NULL, .transform = NULL
   };
   returnopt res;
-  if ((res = opt_init(argc, argv, suppopt, NBOPTION, (void *)cntxt,
+  if ((res = opt_init(argc, argv, suppopt, NBOPTION, &cntxt,
     DESC, USAGE, (void * (*) (void *, const void *))addfile)) != SUCCESS) {
     if (res == HELP){
       goto dispose;
@@ -121,13 +123,13 @@ int main(int argc, const char *argv[]) {
     if (line == NULL || cptt == NULL || f == NULL) {
       if (f == NULL){
         goto error_file;
-       }
+      }
       goto error_capacity;
     }
-    int c = 1;
-    int *cpt = &c;
+    int cpt = 1;
+    int resline;
     if (k == 0) {
-      while (addline(line,f, &cntxt) != 0) {
+      while ((resline = addline(line,f, &cntxt)) != 0) {
         char *tmp[da_length(line)];
         char *s = malloc(da_length(line) + 1);
         if (s == NULL) {
@@ -140,12 +142,12 @@ int main(int argc, const char *argv[]) {
         da *cptr = hashtable_search(ht, s);
         if (cptr != NULL) {
           if (len == 1) {
-            if (da_add(cptt, cpt) == NULL){
+            if (da_add(cptt, &cpt) == NULL){
               goto error_capacity;
             }
           } else {
-            ++(*cpt);
-            if (da_mod_ref(cptt, k, cpt) == NULL){
+            ++cpt;
+            if (da_mod_ref(cptt, k, &cpt) == NULL){
               goto error_write;
             }
           }
@@ -159,7 +161,7 @@ int main(int argc, const char *argv[]) {
           }
         }
         if (len == 1) {
-          ++(*cpt);
+          ++cpt;
         }
         da_dispose(&line);
         da *line = da_empty();
@@ -168,6 +170,63 @@ int main(int argc, const char *argv[]) {
           goto error_capacity;
         }
       }
+      if (resline < 0){
+        goto error_read;
+      }
+    } else {
+      while ((resline = addline(line,f, &cntxt)) != 0) {
+        char *tmp[da_length(line)];
+        char *s = malloc(da_length(line) + 1);
+        if (s == NULL) {
+          goto error_capacity;
+        }
+        for (size_t k = 0; k <= da_length(line); ++k){
+          tmp[k] = da_ref(line, k);
+        }
+        strcpy(s, *tmp);
+        da *cptr = hashtable_search(ht, s);
+        if (cptr != NULL){
+          if (cpt == 1) {
+            if (da_add(cptt, &cpt) == NULL){
+              goto error_capacity;
+            }
+          } else {
+            ++cpt;
+            if (da_mod_ref(cptt, k, &cpt) == NULL){
+              goto error_write;
+            }
+          }
+        }
+        da_dispose(&line);
+        da *line = da_empty();
+        da *cptt = da_empty();
+        if (line == NULL || cptt == NULL){
+          goto error_capacity;
+        }
+      }
+      if (resline < 0){
+        goto error_read;
+      }
+    }
+    if (feof(f) == 0) {
+      goto error_read;
+    }
+    TRACK
+    if (fclose(f) != 0){
+      goto error_file;
+    }
+  }
+  if (len == 1) {
+    if (holdall_apply_context(has,
+      ht, (void *(*)(void *, void *))hashtable_search,
+      (int (*)(void *, void *))scptr_display_one) != 0) {
+      goto error_write;
+    }
+  } else {
+    if (holdall_apply_context(has,
+      ht, (void *(*)(void *, void *))hashtable_search,
+      (int (*)(void *, void *))scptr_display_mult) != 0) {
+      goto error_write;
     }
   }
   goto dispose;
@@ -175,7 +234,7 @@ error_capacity:
   fprintf(stderr, "*** Error: Not enough memory\n");
   goto error;
 error_file:
-  fprintf(stderr, "*** Error: file doesn't exist\n");
+  fprintf(stderr, "*** Error: An error on the file occurs\n");
   goto error;
 error_read:
   fprintf(stderr, "*** Error: A read error occurs\n");
@@ -231,7 +290,7 @@ int rfree(void *ptr) {
 
 int addline(da *p, FILE *filename, cnxt *cntxt) {
   int c;
-  while ((c = fgetc(filename)) != EOF || c != '\n') {
+  while ((c = fgetc(filename)) != EOF && c != '\n') {
     if (cntxt->filter == NULL || cntxt->filter(c) != 0){
       char *s = malloc(sizeof *s);
       if (s == NULL) {
@@ -243,7 +302,15 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
       }
     }
   }
+  char *s = malloc(sizeof *s);
+  if (s == NULL) {
+    return -1;
+  }
   c = '\0';
+  *s = (char) c;
+  if (da_add(p, s) == NULL) {
+    return -1;
+  }
   if (ferror(filename) != 0) {
     return -1;
   }
