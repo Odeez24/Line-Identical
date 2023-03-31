@@ -56,7 +56,7 @@ static int rfree(void *ptr);
 //    dynamique pointer par p.
 //    Renvoie une valeur négative en cas de dépassement de capacité ou de
 //    probleme de lecture sur le fichier, renvoie zéro sinon;
-int addline(da *p, FILE *filename);
+int addline(da *p, FILE *filename, cnxt *cntxt);
 
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
@@ -67,7 +67,7 @@ int filter_choose (cnxt *cntxt, const char *s);
 
 int transform_choose (cnxt* cntxt, const char *s);
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   if (argc == 1) {
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
     printf(USAGE, argv[0], argv[0]);
@@ -75,10 +75,11 @@ int main(int argc, char *argv[]) {
   }
   opt *opt1 = opt_gen("-u", "--uppercase",
     "Met tous les caractéres enregistrer en majuscule", false,
-      transform_choose);
+      (int (*)(const void *, const void *))transform_choose);
   opt *opt2 = opt_gen("-f", "--filter=",
-    "Applique le filtre passer en argument", false, filter_choose);
-  opt **suppopt[] = {opt1, opt2};
+    "Applique le filtre passer en argument", false,
+      (int (*)(const void *, const void *))filter_choose);
+  opt *suppopt[NBOPTION] = {opt1, opt2};
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
   holdall *has = holdall_empty();
@@ -88,12 +89,12 @@ int main(int argc, char *argv[]) {
   if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL) {
     goto error_capacity;
   }
-  cxnt cntxt = {
-    .filelist = filelist, filter = NULL, transform = NULL
+  cnxt cntxt = {
+    .filelist = filelist, .filter = NULL, .transform = NULL
   };
   returnopt res;
-  if ((res =opt_init(argc, argv, suppopt, NBOPTION, cntxt,
-    DESC, USAGE, addfile)) != SUCCESS) {
+  if ((res = opt_init(argc, argv, suppopt, NBOPTION, (void *)cntxt,
+    DESC, USAGE, (void * (*) (void *, const void *))addfile)) != SUCCESS) {
     if (res == HELP){
       goto dispose;
     }
@@ -106,34 +107,69 @@ int main(int argc, char *argv[]) {
     }
     if (res == NO_OPT) {
       for (int k = 1; k < argc; ++k) {
-        if (addfile(cntxt->filelist, argv[k]) == NULL) {
+        if (addfile(cntxt.filelist, argv[k]) == NULL) {
           goto error_capacity;
         }
       }
     }
   }
-  size_t len = da_length(cntxt->filelist);
+  size_t len = da_length(cntxt.filelist);
   for (size_t k = 0; k < len; ++k) {
-    FILE *f = fopen(da_ref(cntxt->filelist, k), "rb");
+    FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
     da *line = da_empty();
-    da *cpt = da_empty();
-    if (line == NULL || cpt == NULL || f == NULL) {
+    da *cptt = da_empty();
+    if (line == NULL || cptt == NULL || f == NULL) {
       if (f == NULL){
         goto error_file;
        }
       goto error_capacity;
     }
+    int c = 1;
+    int *cpt = &c;
     if (k == 0) {
-    while (addline(line,f,cntxt) != 0) {
-      char *tmp[da_length(line)];
-      char *s = malloc(da_length(p));
-      if (s == NULL) {
-        goto error_capacity;
+      while (addline(line,f, &cntxt) != 0) {
+        char *tmp[da_length(line)];
+        char *s = malloc(da_length(line) + 1);
+        if (s == NULL) {
+          goto error_capacity;
+        }
+        for (size_t k = 0; k <= da_length(line); ++k){
+          tmp[k] = da_ref(line, k);
+        }
+        strcpy(s, *tmp);
+        da *cptr = hashtable_search(ht, s);
+        if (cptr != NULL) {
+          if (len == 1) {
+            if (da_add(cptt, cpt) == NULL){
+              goto error_capacity;
+            }
+          } else {
+            ++(*cpt);
+            if (da_mod_ref(cptt, k, cpt) == NULL){
+              goto error_write;
+            }
+          }
+        } else {
+          if (holdall_put(has, s) != 0) {
+            free(s);
+            goto error_capacity;
+          }
+          if (hashtable_add(ht, s, cptt) == NULL) {
+            goto error_capacity;
+          }
+        }
+        if (len == 1) {
+          ++(*cpt);
+        }
+        da_dispose(&line);
+        da *line = da_empty();
+        da *cptt = da_empty();
+        if (line == NULL || cptt == NULL){
+          goto error_capacity;
+        }
       }
-      for (size_t k = 0; k <= da_length(p); ++k){
-        tmp[k] = da_ref(p, k);
-      }
-      strcpy(s, &tmp);
+    }
+  }
   goto dispose;
 error_capacity:
   fprintf(stderr, "*** Error: Not enough memory\n");
