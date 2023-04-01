@@ -4,6 +4,8 @@
 #include "da.h"
 #include "stdint.h"
 
+#define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
+
 #define DA__CAPACITY_MIN 1
 #define DA__CAPACITY_MUL 2
 
@@ -60,7 +62,10 @@ void *da_add(da *p, const void *ref) {
   if (ref == NULL) {
     return NULL;
   }
+  TRACK
+  //SEGMENTATION FAULT ICI
   if (LENGTH(p) == CAPACITY(p)) {
+    TRACK
     if (((sizeof *(p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
       return NULL;
     }

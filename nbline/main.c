@@ -63,7 +63,7 @@ int addline(da *p, FILE *filename, cnxt *cntxt);
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
 //    Renvoie NULL en cas de dépassement de capacité, filename sinon.
-void * addfile(da *p, const char *filename);
+void *addfile(da *p, const char *filename);
 
 int filter_choose (cnxt *cntxt, const char *s);
 
@@ -129,7 +129,7 @@ int main(int argc, const char *argv[]) {
     int cpt = 1;
     int resline;
     if (k == 0) {
-      while ((resline = addline(line,f, &cntxt)) != 0) {
+      while ((resline = addline(line,f, &cntxt)) == 0) {
         char *tmp[da_length(line)];
         char *s = malloc(da_length(line) + 1);
         if (s == NULL) {
@@ -139,13 +139,16 @@ int main(int argc, const char *argv[]) {
           tmp[k] = da_ref(line, k);
         }
         strcpy(s, *tmp);
+        printf("%s\n", s);
         da *cptr = hashtable_search(ht, s);
         if (cptr != NULL) {
           if (len == 1) {
+            TRACK
             if (da_add(cptt, &cpt) == NULL){
               goto error_capacity;
             }
           } else {
+            TRACK
             ++cpt;
             if (da_mod_ref(cptt, k, &cpt) == NULL){
               goto error_write;
@@ -169,7 +172,9 @@ int main(int argc, const char *argv[]) {
         if (line == NULL || cptt == NULL){
           goto error_capacity;
         }
+        TRACK
       }
+      TRACK
       if (resline < 0){
         goto error_read;
       }
@@ -208,14 +213,16 @@ int main(int argc, const char *argv[]) {
         goto error_read;
       }
     }
-    if (feof(f) == 0) {
+    da_dispose(&line);
+    da_dispose(&cptt);
+    if (feof(f)) {
       goto error_read;
     }
-    TRACK
     if (fclose(f) != 0){
       goto error_file;
     }
   }
+  TRACK
   if (len == 1) {
     if (holdall_apply_context(has,
       ht, (void *(*)(void *, void *))hashtable_search,
@@ -267,9 +274,10 @@ static int scptr_display_one(const char *s, da *cpt) {
     return 0;
   }
   for (size_t k = 0; k <= da_length(cpt); ++k) {
-    fprintf(stdout, "%ls,", (int *) da_ref(cpt, k));
+    TRACK
+    printf("%ls,", (int *) da_ref(cpt, k));
   }
-  return fprintf(stdout, "\t%s\n", s) < 0;
+  return printf("\t%s\n", s) < 0;
 }
 
 static int scptr_display_mult(const char *s, da *cpt) {
@@ -277,9 +285,9 @@ static int scptr_display_mult(const char *s, da *cpt) {
     return 0;
   }
   for (size_t k = 0; k <= da_length(cpt); ++k) {
-    fprintf(stdout, "%ls\t", (int *) da_ref(cpt, k));
+    printf("%ls\t", (int *) da_ref(cpt, k));
   }
-  return fprintf(stdout, "%s\n", s) < 0;
+  return printf("%s\n", s) < 0;
 }
 
 int rfree(void *ptr) {
@@ -287,18 +295,19 @@ int rfree(void *ptr) {
   return 0;
 }
 
-
 int addline(da *p, FILE *filename, cnxt *cntxt) {
   int c;
   while ((c = fgetc(filename)) != EOF && c != '\n') {
     if (cntxt->filter == NULL || cntxt->filter(c) != 0){
-      char *s = malloc(sizeof *s);
-      if (s == NULL) {
-        return -1;
-      }
-      *s = (char) c;
-      if (da_add(p, s) == NULL) {
-        return -1;
+      if (cntxt->transform == NULL || (c = cntxt->transform(c))){
+        char *s = malloc(sizeof *s);
+        if (s == NULL) {
+          return -1;
+        }
+        *s = (char) c;
+        if (da_add(p, s) == NULL) {
+          return -1;
+        }
       }
     }
   }
@@ -308,13 +317,16 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
   }
   c = '\0';
   *s = (char) c;
-  if (da_add(p, s) == NULL) {
+  TRACK
+  if (da_add(p, s) == NULL){
+    TRACK
     return -1;
   }
+  TRACK
   if (ferror(filename) != 0) {
     return -1;
   }
-  if (c == '\n' && feof(filename) == 0) {
+  if (c == '\n' && feof(filename)) {
     return 1;
   }
   return 0;
