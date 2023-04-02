@@ -60,12 +60,10 @@ void da_dispose(da **aptr) {
 
 void *da_add(da *p, const void *ref) {
   if (ref == NULL) {
+    TRACK
     return NULL;
   }
-  TRACK
-  //SEGMENTATION FAULT ICI
   if (LENGTH(p) == CAPACITY(p)) {
-    TRACK
     if (((sizeof *(p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
       return NULL;
     }
@@ -73,6 +71,7 @@ void *da_add(da *p, const void *ref) {
       = realloc(p->aref,
         (sizeof *(p->aref) * p->capacity * DA__CAPACITY_MUL));
     if (t == NULL) {
+      TRACK
       return NULL;
     }
     p->aref = t;

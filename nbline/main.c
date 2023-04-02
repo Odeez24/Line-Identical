@@ -65,9 +65,9 @@ int addline(da *p, FILE *filename, cnxt *cntxt);
 //    Renvoie NULL en cas de dépassement de capacité, filename sinon.
 void *addfile(da *p, const char *filename);
 
-int filter_choose (cnxt *cntxt, const char *s);
+int filter_choose(cnxt *cntxt, const char *s);
 
-int transform_choose (cnxt* cntxt, const char *s);
+int transform_choose(cnxt *cntxt, const char *s);
 
 int main(int argc, const char *argv[]) {
   if (argc == 1) {
@@ -76,12 +76,14 @@ int main(int argc, const char *argv[]) {
     return EXIT_FAILURE;
   }
   opt *opt1 = opt_gen("-u", "--uppercase",
-    "Met tous les caractéres enregistrer en majuscule", false,
+      "Met tous les caractéres enregistrer en majuscule", false,
       (int (*)(const void *, const void *))transform_choose);
   opt *opt2 = opt_gen("-f", "--filter=",
-    "Applique le filtre passer en argument", false,
+      "Applique le filtre passer en argument", false,
       (int (*)(const void *, const void *))filter_choose);
-  opt *suppopt[NBOPTION] = {opt1, opt2};
+  opt *suppopt[NBOPTION] = {
+    opt1, opt2
+  };
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
   holdall *has = holdall_empty();
@@ -96,8 +98,8 @@ int main(int argc, const char *argv[]) {
   };
   returnopt res;
   if ((res = opt_init(argc, argv, suppopt, NBOPTION, &cntxt,
-    DESC, USAGE, (void * (*) (void *, const void *))addfile)) != SUCCESS) {
-    if (res == HELP){
+      DESC, USAGE, (void *(*)(void *, const void *))addfile)) != SUCCESS) {
+    if (res == HELP) {
       goto dispose;
     }
     if (res == ERR_ADD) {
@@ -121,40 +123,56 @@ int main(int argc, const char *argv[]) {
     da *line = da_empty();
     da *cptt = da_empty();
     if (line == NULL || cptt == NULL || f == NULL) {
-      if (f == NULL){
+      if (f == NULL) {
         goto error_file;
       }
       goto error_capacity;
     }
-    int cpt = 1;
+    int c = 1;
+    int *cpt = &c;
     int resline;
-    if (k == 0) {
-      while ((resline = addline(line,f, &cntxt)) == 0) {
-        char *tmp[da_length(line)];
-        char *s = malloc(da_length(line) + 1);
-        if (s == NULL) {
-          goto error_capacity;
-        }
-        for (size_t k = 0; k <= da_length(line); ++k){
-          tmp[k] = da_ref(line, k);
-        }
-        strcpy(s, *tmp);
-        printf("%s\n", s);
-        da *cptr = hashtable_search(ht, s);
-        if (cptr != NULL) {
+    while ((resline = addline(line, f, &cntxt)) == 0) {
+      char *tmp[da_length(line)];
+      char *s = malloc(da_length(line));
+      if (s == NULL) {
+        goto error_capacity;
+      }
+      for (size_t k = 0; k <= da_length(line); ++k) {
+        tmp[k] = da_ref(line, k);
+      }
+      strcpy(s, *tmp);
+      da *cptr = hashtable_search(ht, s);
+      TRACK
+      if (cptr != NULL) {
+        TRACK
+        if (k == 0) {
+          TRACK
           if (len == 1) {
             TRACK
-            if (da_add(cptt, &cpt) == NULL){
+            if (da_add(cptr, cpt) == NULL) {
               goto error_capacity;
             }
           } else {
-            TRACK
             ++cpt;
-            if (da_mod_ref(cptt, k, &cpt) == NULL){
+            if (da_mod_ref(cptr, k, cpt) == NULL) {
               goto error_write;
             }
           }
         } else {
+          if (*cpt == 1) {
+            if (da_add(cptr, cpt) == NULL) {
+              TRACK
+              goto error_capacity;
+            }
+          } else {
+            ++cpt;
+            if (da_mod_ref(cptr, k, cpt) == NULL) {
+              goto error_write;
+            }
+          }
+        }
+      } else {
+        if (k == 0) {
           if (holdall_put(has, s) != 0) {
             free(s);
             goto error_capacity;
@@ -163,76 +181,43 @@ int main(int argc, const char *argv[]) {
             goto error_capacity;
           }
         }
-        if (len == 1) {
-          ++cpt;
-        }
-        da_dispose(&line);
-        da *line = da_empty();
-        da *cptt = da_empty();
-        if (line == NULL || cptt == NULL){
-          goto error_capacity;
-        }
-        TRACK
+      }
+      if (len == 1) {
+        ++cpt;
       }
       TRACK
-      if (resline < 0){
-        goto error_read;
+      // Errure sergementation ici
+      da_dispose(&line);
+      TRACK
+      line = da_empty();
+      cptt = da_empty();
+      if (line == NULL || cptt == NULL) {
+        goto error_capacity;
       }
-    } else {
-      while ((resline = addline(line,f, &cntxt)) != 0) {
-        char *tmp[da_length(line)];
-        char *s = malloc(da_length(line) + 1);
-        if (s == NULL) {
-          goto error_capacity;
-        }
-        for (size_t k = 0; k <= da_length(line); ++k){
-          tmp[k] = da_ref(line, k);
-        }
-        strcpy(s, *tmp);
-        da *cptr = hashtable_search(ht, s);
-        if (cptr != NULL){
-          if (cpt == 1) {
-            if (da_add(cptt, &cpt) == NULL){
-              goto error_capacity;
-            }
-          } else {
-            ++cpt;
-            if (da_mod_ref(cptt, k, &cpt) == NULL){
-              goto error_write;
-            }
-          }
-        }
-        da_dispose(&line);
-        da *line = da_empty();
-        da *cptt = da_empty();
-        if (line == NULL || cptt == NULL){
-          goto error_capacity;
-        }
-      }
-      if (resline < 0){
-        goto error_read;
-      }
+      TRACK
+    }
+    if (resline < 0) {
+      goto error_read;
     }
     da_dispose(&line);
     da_dispose(&cptt);
     if (feof(f)) {
       goto error_read;
     }
-    if (fclose(f) != 0){
+    if (fclose(f) != 0) {
       goto error_file;
     }
   }
-  TRACK
   if (len == 1) {
     if (holdall_apply_context(has,
-      ht, (void *(*)(void *, void *))hashtable_search,
-      (int (*)(void *, void *))scptr_display_one) != 0) {
+        ht, (void *(*)(void *, void *))hashtable_search,
+        (int (*)(void *, void *))scptr_display_one) != 0) {
       goto error_write;
     }
   } else {
     if (holdall_apply_context(has,
-      ht, (void *(*)(void *, void *))hashtable_search,
-      (int (*)(void *, void *))scptr_display_mult) != 0) {
+        ht, (void *(*)(void *, void *))hashtable_search,
+        (int (*)(void *, void *))scptr_display_mult) != 0) {
       goto error_write;
     }
   }
@@ -270,12 +255,12 @@ size_t str_hashfun(const char *s) {
 }
 
 static int scptr_display_one(const char *s, da *cpt) {
+  TRACK
   if (da_length(cpt) < 2) {
     return 0;
   }
   for (size_t k = 0; k <= da_length(cpt); ++k) {
-    TRACK
-    printf("%ls,", (int *) da_ref(cpt, k));
+    TRACK printf("%ls,", (int *) da_ref(cpt, k));
   }
   return printf("\t%s\n", s) < 0;
 }
@@ -298,8 +283,8 @@ int rfree(void *ptr) {
 int addline(da *p, FILE *filename, cnxt *cntxt) {
   int c;
   while ((c = fgetc(filename)) != EOF && c != '\n') {
-    if (cntxt->filter == NULL || cntxt->filter(c) != 0){
-      if (cntxt->transform == NULL || (c = cntxt->transform(c))){
+    if (cntxt->filter == NULL || cntxt->filter(c) != 0) {
+      if (cntxt->transform == NULL || (c = cntxt->transform(c))) {
         char *s = malloc(sizeof *s);
         if (s == NULL) {
           return -1;
@@ -317,85 +302,82 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
   }
   c = '\0';
   *s = (char) c;
-  TRACK
-  if (da_add(p, s) == NULL){
-    TRACK
+  if (da_add(p, s) == NULL) {
     return -1;
   }
-  TRACK
   if (ferror(filename) != 0) {
     return -1;
   }
-  if (c == '\n' && feof(filename)) {
+  if (feof(filename)) {
     return 1;
   }
   return 0;
 }
 
-void * addfile(da *p, const char *filename) {
-  if (p == NULL){
+void *addfile(da *p, const char *filename) {
+  if (p == NULL) {
     return NULL;
   }
-  if (da_add(p, filename) == NULL){
+  if (da_add(p, filename) == NULL) {
     return NULL;
   }
   return (char *) filename;
 }
 
-int transform_choose (cnxt* cntxt, const char *s){
-  if (strcmp("-u", s) == 0 || strcmp("--uppercase", s) == 0){
+int transform_choose(cnxt *cntxt, const char *s) {
+  if (strcmp("-u", s) == 0 || strcmp("--uppercase", s) == 0) {
     cntxt->transform = toupper;
     return 0;
   }
   return -1;
 }
 
-int filter_choose (cnxt *cntxt, const char *s) {
-  if (strcmp("isalnum", s) == 0){
+int filter_choose(cnxt *cntxt, const char *s) {
+  if (strcmp("isalnum", s) == 0) {
     cntxt->filter = isalnum;
     return 0;
   }
-  if (strcmp("isalpha", s) == 0){
+  if (strcmp("isalpha", s) == 0) {
     cntxt->filter = isalpha;
     return 0;
   }
-  if (strcmp("isblank", s) == 0){
+  if (strcmp("isblank", s) == 0) {
     cntxt->filter = isblank;
     return 0;
   }
-  if (strcmp("iscntrl", s) == 0){
+  if (strcmp("iscntrl", s) == 0) {
     cntxt->filter = iscntrl;
     return 0;
   }
-  if (strcmp("isdigit", s) == 0){
+  if (strcmp("isdigit", s) == 0) {
     cntxt->filter = isdigit;
     return 0;
   }
-  if (strcmp("isgraph", s) == 0){
+  if (strcmp("isgraph", s) == 0) {
     cntxt->filter = isgraph;
     return 0;
   }
-  if (strcmp("islower", s) == 0){
+  if (strcmp("islower", s) == 0) {
     cntxt->filter = islower;
     return 0;
   }
-  if (strcmp("isprint", s) == 0){
+  if (strcmp("isprint", s) == 0) {
     cntxt->filter = isprint;
     return 0;
   }
-  if (strcmp("ispunct", s) == 0){
+  if (strcmp("ispunct", s) == 0) {
     cntxt->filter = ispunct;
     return 0;
   }
-  if (strcmp("isspace", s) == 0){
+  if (strcmp("isspace", s) == 0) {
     cntxt->filter = isspace;
     return 0;
   }
-  if (strcmp("isupper", s) == 0){
+  if (strcmp("isupper", s) == 0) {
     cntxt->filter = isupper;
     return 0;
   }
-  if (strcmp("isxdigit", s) == 0){
+  if (strcmp("isxdigit", s) == 0) {
     cntxt->filter = isxdigit;
     return 0;
   }
