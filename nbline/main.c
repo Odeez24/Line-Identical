@@ -53,21 +53,23 @@ static int scptr_display_mult(const char *s, da *cpt);
 //  rfree : libère la zone mémoire pointée par ptr et renvoie zéro.
 static int rfree(void *ptr);
 
+static int rdafree(da *p);
+
 //  addline : On suppose que le fichier filename est ouvert en lecture. Tente
 //    sinon de lire une ligne du filename et de l'ajouter au tableaux
 //    dynamique pointer par p.
 //    Renvoie une valeur négative en cas de dépassement de capacité ou de
 //    probleme de lecture sur le fichier, renvoie zéro sinon;
-int addline(da *p, FILE *filename, cnxt *cntxt);
+static int addline(da *p, FILE *filename, cnxt *cntxt);
 
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
 //    Renvoie NULL en cas de dépassement de capacité, filename sinon.
-void *addfile(da *p, char *filename);
+static void *addfile(da *p, char *filename);
 
-int filter_choose(cnxt *cntxt, const char *s);
+static int filter_choose(cnxt *cntxt, const char *s);
 
-int transform_choose(cnxt *cntxt, const char *s);
+static int transform_choose(cnxt *cntxt, const char *s);
 
 int main(int argc, char *argv[]) {
   if (argc == 1) {
@@ -133,61 +135,86 @@ int main(int argc, char *argv[]) {
     int nbline = 1;
     int resline;
     while ((resline = addline(line, f, &cntxt)) == 0) {
-      char *tmp[da_length(line)];
-      char *s = malloc(da_length(line) + 1);
-      if (s == NULL) {
-        goto error_capacity;
-      }
-      for (size_t k = 0; k < da_length(line); ++k) {
-        tmp[k] = da_ref(line, k);
-      }
-      for (size_t k = 0; k < da_length(line); ++k) {
-        s[k] = *tmp[k];
-      }
-      da *cptr = hashtable_search(ht, s);
-      if (cptr != NULL) {
-        if (k == 0) {
-          if (len == 1) {
-            if (da_add(cptr, cpt) == NULL) {
-              goto error_capacity;
+      if (da_length(line) != 0){
+        char *s = malloc(da_length(line) + 1);
+        if (s == NULL) {
+          goto error_capacity;
+        }
+        for (size_t k = 0; k < da_length(line); ++k) {
+          char *tmp = da_ref(line, k);
+          s[k] = *tmp;
+        }
+        da *cptr = hashtable_search(ht, s);
+        if (cptr != NULL) {
+          if (k == 0) {
+            if (len == 1) {
+              int *cpt = malloc(sizeof *cpt);
+              if (cpt == NULL) {
+                goto error_capacity;
+              }
+              *cpt = nbline;
+              if (da_add(cptr, cpt) == NULL) {
+                goto error_capacity;
+              }
+              if (holdall_put(hascpt, cptr) != 0) {
+                free(cptr);
+                goto error_capacity;
+              }
+            } else {
+              int *cpt = da_ref(cptt, k);
+              (*cpt)++;
             }
           } else {
-            ++cpt;
-            if (da_mod_ref(cptr, k, cpt) == NULL) {
-              goto error_write;
+            if (c == 1) {
+              int *cpt = malloc(sizeof *cpt);
+              if (cpt == NULL) {
+                goto error_capacity;
+              }
+              *cpt = 1;
+              if (da_add(cptr, cpt) == NULL) {
+                goto error_capacity;
+              }
+              if (holdall_put(hascpt, cptr) != 0) {
+                free(cptr);
+                goto error_capacity;
+              }
+            } else {
+              int *cpt = da_ref(cptt, k);
+              (*cpt)++;
             }
           }
         } else {
-          if (*cpt == 1) {
-            if (da_add(cptr, cpt) == NULL) {
+          if (k == 0) {
+            if (holdall_put(has, s) != 0) {
+              free(s);
               goto error_capacity;
             }
-          } else {
-            ++cpt;
-            if (da_mod_ref(cptr, k, cpt) == NULL) {
-              goto error_write;
+            int *cpt = malloc(sizeof *cpt);
+            if (cpt == NULL) {
+              goto error_capacity;
+            }
+            *cpt = nbline;
+            if (da_add(cptt, cpt) == NULL) {
+              goto error_capacity;
+            }
+            if (holdall_put(hascpt, cptt) != 0) {
+              free(cptr);
+              goto error_capacity;
+            }
+            if (hashtable_add(ht, s, cptt) == NULL) {
+              goto error_capacity;
             }
           }
         }
-      } else {
-        if (k == 0) {
-          if (holdall_put(has, s) != 0) {
-            free(s);
-            goto error_capacity;
-          }
-          if (hashtable_add(ht, s, cptt) == NULL) {
-            goto error_capacity;
-          }
+        da_dispose(&line);
+        line = da_empty();
+        cptt = da_empty();
+        if (line == NULL || cptt == NULL) {
+          goto error_capacity;
         }
       }
       if (len == 1) {
         ++nbline;
-      }
-      da_dispose(&line);
-      line = da_empty();
-      cptt = da_empty();
-      if (line == NULL || cptt == NULL) {
-        goto error_capacity;
       }
     }
     if (resline < 0) {
@@ -196,7 +223,6 @@ int main(int argc, char *argv[]) {
     da_dispose(&line);
     da_dispose(&cptt);
     if (!feof(f)) {
-      TRACK
       goto error_read;
     }
     if (fclose(f) != 0) {
@@ -233,19 +259,21 @@ error:
   r = EXIT_FAILURE;
   goto dispose;
 dispose:
+if (suppopt != NULL) {
+    for (int k = 0; k < NBOPTION; ++k){
+      opt_dispose(&suppopt[k]);
+    }
+  }
+  da_dispose(&(cntxt.filelist));
   hashtable_dispose(&ht);
   if (has != NULL) {
     holdall_apply(has, rfree);
   }
   if (hascpt != NULL) {
-    holdall_apply(hascpt, rfree);
+    holdall_apply(hascpt, (int (*) (void *))rdafree);
   }
   holdall_dispose(&has);
-  if (suppopt != NULL) {
-    for (int k = 0; k < NBOPTION; ++k){
-      opt_dispose(&suppopt[k]);
-    }
-  }
+  holdall_dispose(&hascpt);
   return r;
 }
 
@@ -262,7 +290,8 @@ static int scptr_display_one(const char *s, da *cpt) {
     return 0;
   }
   for (size_t k = 0; k < da_length(cpt); k++) {
-    printf("%ls,", (int *) da_ref(cpt, k));
+    int *c = (da_ref(cpt, k));
+    printf("%d,", *c);
   }
   return printf("\t%s\n", s) < 0;
 }
@@ -282,6 +311,11 @@ int rfree(void *ptr) {
   return 0;
 }
 
+int rdafree(da *p){
+  da_dispose(&p);
+  return 0;
+}
+
 int addline(da *p, FILE *filename, cnxt *cntxt) {
   int c;
   while ((c = fgetc(filename)) != EOF && c != '\n') {
@@ -298,14 +332,16 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
       }
     }
   }
-  char *s = malloc(sizeof *s);
-  if (s == NULL) {
-    return -1;
-  }
-  c = '\0';
-  *s = (char) c;
-  if (da_add(p, s) == NULL) {
-    return -1;
+  if (da_length(p) != 0){
+    char *s = malloc(sizeof *s);
+    if (s == NULL) {
+      return -1;
+    }
+    c = '\0';
+    *s = (char) c;
+    if (da_add(p, s) == NULL) {
+      return -1;
+    }
   }
   if (ferror(filename) != 0) {
     return -1;

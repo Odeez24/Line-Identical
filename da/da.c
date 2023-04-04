@@ -12,7 +12,7 @@
 //--- Définition da ------------------------------------------------------------
 
 struct da {
-  void **aref;
+  const void **aref;
   size_t length;
   size_t capacity;
 };
@@ -37,7 +37,7 @@ da *da_empty() {
   if (p == NULL) {
     return NULL;
   }
-  void **tab = malloc(DA__CAPACITY_MIN * sizeof *(p->aref));
+  const void **tab = malloc(DA__CAPACITY_MIN * sizeof *(p->aref));
   if (tab == NULL) {
     free(p);
     return NULL;
@@ -58,7 +58,7 @@ void da_dispose(da **aptr) {
   return;
 }
 
-void *da_add(da *p, void *ref) {
+void *da_add(da *p, const void *ref) {
   if (ref == NULL) {
     return NULL;
   }
@@ -66,7 +66,7 @@ void *da_add(da *p, void *ref) {
     if (((sizeof *(p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
       return NULL;
     }
-    void **t
+    const void **t
       = realloc(p->aref,
         (sizeof *(p->aref) * p->capacity * DA__CAPACITY_MUL));
     if (t == NULL) {
@@ -90,19 +90,6 @@ void *da_ref(da *p, size_t i) {
   return (void *) p->aref[i];
 }
 
-void *da_mod_ref(da *p, size_t i, void *ref) {
-  if (p == NULL) {
-    return NULL;
-  }
-  if (i > LENGTH(p)) {
-    return NULL;
-  }
-  if (ref == NULL) {
-    return NULL;
-  }
-  p->aref[i] = ref;
-  return ref;
-}
 
 size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
