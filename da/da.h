@@ -45,7 +45,7 @@ extern void da_dispose(da **aptr);
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
 //    selon la méthode de l'ajout en bout de chemin renvoie NULL en cas de
 //    dépassement de capacité ; renvoie sinon ref.
-extern void *da_add(da *p, const void *ref);
+extern void *da_add(da *p, void *ref);
 
 //  da_ref : Renvoie la référence d'incide i du tableau pointé par p.
 //    Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
@@ -59,9 +59,9 @@ extern void *da_ref(da *p, size_t i);
 extern void *da_mod_ref(da *p, size_t i, void *ref);
 
 //  da_length : Renvoie la longueur du tableaux associés à p.
-extern size_t da_length(da *p);
+extern size_t da_length(da *d);
 
 //  da_capacity : Renvoie la capaciter du tableaux associés à p.
-extern size_t da_capacity(da *p);
+extern size_t da_capacity(da *d);
 
 #endif

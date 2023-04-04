@@ -29,7 +29,7 @@ static const char * est_prefixe(const char *s1, const char *s2) {
   return est_prefixe(s1 + 1, s2 + 1);
 }
 
-const char *opt_select(opt *optsupp, const char **argv, int k) {
+const char *opt_select(opt *optsupp, char **argv, int k) {
   if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
     return argv[k + 1];
   } else if (strcmp(optsupp->longopt, argv[k]) == 0 && optsupp->arg){
@@ -39,7 +39,7 @@ const char *opt_select(opt *optsupp, const char **argv, int k) {
 }
 
 
-static int opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
+static int opt_test(void * cntxt, opt **optsupp, char **argv, int k,
   size_t nbopt) {
   size_t nb = 0;
   for (size_t i = 0; i < nbopt; ++i){
@@ -76,6 +76,13 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
   return op;
 }
 
+void opt_dispose (opt **aopt){
+  if (*aopt == NULL) {
+    return;
+  }
+  free (*aopt);
+}
+
 #define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s : \n\t%s\n", opta->shortopt, \
   (opta->arg ? " [option]" : ""), opta->longopt,                               \
   (opta->arg ? "[option]" : ""), opta->desc);                                 \
@@ -84,7 +91,7 @@ opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 #define LONGHELP "--help"
 
 
-returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
+returnopt opt_init(int argc, char **argv, opt **optsupp, size_t nbopt,
   void *cntxt, const char *desc, const char *usage,
   void *(*fun) (void *, const void *)){
   if (argc <= 2){

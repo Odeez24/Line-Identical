@@ -5,7 +5,7 @@ opt_dir = ../opt/
 CC = gcc
 CFLAGS = -std=c18 \
   -Wall -Wconversion -Werror -Wextra -Wpedantic -Wwrite-strings \
-  -O2 \
+  -O2 -g3\
   -I$(da_dir) -I$(holdall_dir) -I$(hashtable_dir) -I$(opt_dir)
 vpath %.c $(da_dir) $(holdall_dir) $(hashtable_dir) $(opt_dir)
 vpath %.h $(da_dir)  $(holdall_dir) $(hashtable_dir) $(opt_dir)

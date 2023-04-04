@@ -63,13 +63,13 @@ int addline(da *p, FILE *filename, cnxt *cntxt);
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
 //    Renvoie NULL en cas de dépassement de capacité, filename sinon.
-void *addfile(da *p, const char *filename);
+void *addfile(da *p, char *filename);
 
 int filter_choose(cnxt *cntxt, const char *s);
 
 int transform_choose(cnxt *cntxt, const char *s);
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
   if (argc == 1) {
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
     printf(USAGE, argv[0], argv[0]);
@@ -124,31 +124,30 @@ int main(int argc, const char *argv[]) {
     da *cptt = da_empty();
     if (line == NULL || cptt == NULL || f == NULL) {
       if (f == NULL) {
+        TRACK
         goto error_file;
       }
       goto error_capacity;
     }
     int c = 1;
-    int *cpt = &c;
+    int nbline = 1;
     int resline;
     while ((resline = addline(line, f, &cntxt)) == 0) {
       char *tmp[da_length(line)];
-      char *s = malloc(da_length(line));
+      char *s = malloc(da_length(line) + 1);
       if (s == NULL) {
         goto error_capacity;
       }
-      for (size_t k = 0; k <= da_length(line); ++k) {
+      for (size_t k = 0; k < da_length(line); ++k) {
         tmp[k] = da_ref(line, k);
       }
-      strcpy(s, *tmp);
+      for (size_t k = 0; k < da_length(line); ++k) {
+        s[k] = *tmp[k];
+      }
       da *cptr = hashtable_search(ht, s);
-      TRACK
       if (cptr != NULL) {
-        TRACK
         if (k == 0) {
-          TRACK
           if (len == 1) {
-            TRACK
             if (da_add(cptr, cpt) == NULL) {
               goto error_capacity;
             }
@@ -161,7 +160,6 @@ int main(int argc, const char *argv[]) {
         } else {
           if (*cpt == 1) {
             if (da_add(cptr, cpt) == NULL) {
-              TRACK
               goto error_capacity;
             }
           } else {
@@ -183,25 +181,22 @@ int main(int argc, const char *argv[]) {
         }
       }
       if (len == 1) {
-        ++cpt;
+        ++nbline;
       }
-      TRACK
-      // Errure sergementation ici
       da_dispose(&line);
-      TRACK
       line = da_empty();
       cptt = da_empty();
       if (line == NULL || cptt == NULL) {
         goto error_capacity;
       }
-      TRACK
     }
     if (resline < 0) {
       goto error_read;
     }
     da_dispose(&line);
     da_dispose(&cptt);
-    if (feof(f)) {
+    if (!feof(f)) {
+      TRACK
       goto error_read;
     }
     if (fclose(f) != 0) {
@@ -242,7 +237,15 @@ dispose:
   if (has != NULL) {
     holdall_apply(has, rfree);
   }
+  if (hascpt != NULL) {
+    holdall_apply(hascpt, rfree);
+  }
   holdall_dispose(&has);
+  if (suppopt != NULL) {
+    for (int k = 0; k < NBOPTION; ++k){
+      opt_dispose(&suppopt[k]);
+    }
+  }
   return r;
 }
 
@@ -255,12 +258,11 @@ size_t str_hashfun(const char *s) {
 }
 
 static int scptr_display_one(const char *s, da *cpt) {
-  TRACK
   if (da_length(cpt) < 2) {
     return 0;
   }
-  for (size_t k = 0; k <= da_length(cpt); ++k) {
-    TRACK printf("%ls,", (int *) da_ref(cpt, k));
+  for (size_t k = 0; k < da_length(cpt); k++) {
+    printf("%ls,", (int *) da_ref(cpt, k));
   }
   return printf("\t%s\n", s) < 0;
 }
@@ -269,7 +271,7 @@ static int scptr_display_mult(const char *s, da *cpt) {
   if (da_length(cpt) < 2) {
     return 0;
   }
-  for (size_t k = 0; k <= da_length(cpt); ++k) {
+  for (size_t k = 0; k < da_length(cpt); k++) {
     printf("%ls\t", (int *) da_ref(cpt, k));
   }
   return printf("%s\n", s) < 0;
@@ -314,7 +316,7 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
   return 0;
 }
 
-void *addfile(da *p, const char *filename) {
+void *addfile(da *p, char *filename) {
   if (p == NULL) {
     return NULL;
   }

@@ -12,7 +12,7 @@
 //--- Définition da ------------------------------------------------------------
 
 struct da {
-  const void **aref;
+  void **aref;
   size_t length;
   size_t capacity;
 };
@@ -37,7 +37,7 @@ da *da_empty() {
   if (p == NULL) {
     return NULL;
   }
-  const void **tab = malloc(DA__CAPACITY_MIN * sizeof *(p->aref));
+  void **tab = malloc(DA__CAPACITY_MIN * sizeof *(p->aref));
   if (tab == NULL) {
     free(p);
     return NULL;
@@ -58,20 +58,18 @@ void da_dispose(da **aptr) {
   return;
 }
 
-void *da_add(da *p, const void *ref) {
+void *da_add(da *p, void *ref) {
   if (ref == NULL) {
-    TRACK
     return NULL;
   }
   if (LENGTH(p) == CAPACITY(p)) {
     if (((sizeof *(p->aref) * p->capacity)) > SIZE_MAX / DA__CAPACITY_MUL) {
       return NULL;
     }
-    const void **t
+    void **t
       = realloc(p->aref,
         (sizeof *(p->aref) * p->capacity * DA__CAPACITY_MUL));
     if (t == NULL) {
-      TRACK
       return NULL;
     }
     p->aref = t;
@@ -89,8 +87,7 @@ void *da_ref(da *p, size_t i) {
   if (i > LENGTH(p)) {
     return NULL;
   }
-  const void *v = p->aref[i];
-  return (void *) v;
+  return (void *) p->aref[i];
 }
 
 void *da_mod_ref(da *p, size_t i, void *ref) {

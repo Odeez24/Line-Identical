@@ -30,6 +30,8 @@ typedef enum {
 extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
     bool arg, int (*fun) (const void *, const void *));
 
+extern void opt_dispose (opt **aopt);
+
 //  opt_parse : Prend en paramétre les nombre d'argument passer ainsi que le
 //    tableau contenant les arguments  et les sépares dans deux tableaux passer
 //    en paramettre l'un contenant les options passer en paramétre et qui sont
@@ -37,7 +39,7 @@ extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
 //    optlist, le reste sera mis dans le tableaux other.
 //    Renvoie ERR_OPT en cas probléme de lecture, NO_OPT si il n'y a pas
 //    d'option passer en argument, SUCCESS sinon.
-extern returnopt opt_init(int argc, const char **argv, opt **optsupp,
+extern returnopt opt_init(int argc, char **argv, opt **optsupp,
   size_t nbopt, void *cntxt, const char *desc, const char *usage,
    void * (*fun) (void *, const void *));
 
