@@ -19,15 +19,15 @@ struct opt {
 //    de celle pointer par s2.
 //    Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie le reste de
 //    s2 qui n'est pas dans s1
-static const char * est_prefixe(const char *s1, const char *s2) {
-  if (*s1 == '\0'){
-    return s2;
-  }
-  if (*s2 == '\0' || *s1 != *s2){
-    return NULL;
-  }
-  return est_prefixe(s1 + 1, s2 + 1);
-}
+//static const char * est_prefixe(const char *s1, const char *s2) {
+  //if (*s1 == '\0'){
+    //return s2;
+  //}
+  //if (*s2 == '\0' || *s1 != *s2){
+    //return NULL;
+  //}
+  //return est_prefixe(s1 + 1, s2 + 1);
+//}
 
 const char *opt_select(opt *optsupp, const char **argv, int k) {
   if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
@@ -39,24 +39,31 @@ const char *opt_select(opt *optsupp, const char **argv, int k) {
   return argv[k];
 }
 
+typedef enum {
+  NOT_OPT,
+  ARG,
+  ERR_ADDTEST,
+  SUCCESSTEST,
+} returntest;
 
-static int opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
+
+static returntest opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
   size_t nbopt) {
   size_t nb = 0;
   for (size_t i = 0; i < nbopt; ++i){
     if (strcmp((optsupp[i])->shortopt, argv[k]) == 0
       || strcmp((optsupp[i])->longopt, argv[k]) == 0) {
       if ((optsupp[i]->fun (cntxt, (opt_select(optsupp[i], argv, k)))) != 0){
-        return -1;
+        return ERR_ADDTEST;
       }
     } else {
       ++nb;
     }
   }
   if (nb == nbopt) {
-    return 1;
+    return NOT_OPT;
   }
-  return 0;
+  return SUCCESSTEST;
 }
 
 //--- Fonctions opt ------------------------------------------------------------
@@ -84,9 +91,9 @@ void opt_dispose (opt **aopt){
   free (*aopt);
 }
 
-#define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s :\t%s\n", opta->shortopt, \
+#define PRINTF_OPT(opta) printf("\t%s%s or %s%s :\t%s\n", opta->shortopt, \
   (opta->arg ? " [option]" : ""), opta->longopt,                               \
-  (opta->arg ? " [option]" : ""), opta->desc);                                 \
+  (opta->arg ? "[option]" : ""), opta->desc);                                 \
 
 #define SHORTHELP "-h"
 #define LONGHELP "--help"
@@ -95,7 +102,7 @@ void opt_dispose (opt **aopt){
 returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
   void *cntxt, const char *desc, const char *usage,
   void *(*fun) (void *, const void *)){
-  if (argc <= 2){
+  if (argc < 2){
     return NO_OPT;
   }
   for (int k = 1; k < argc; ++k){
@@ -113,13 +120,12 @@ returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
     }
 
     int res;
-    if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != 0){
-      if (res > 0) {
-        TRACK
+    if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != SUCCESSTEST){
+      if (res == NOT_OPT) {
         if (fun(cntxt, argv[k]) == NULL){
           return ERR_ADD;
         }
-      } else if (res < 0) {
+      } else if (res == ERR_ADDTEST) {
         return ERR_OPT;
       }
     }

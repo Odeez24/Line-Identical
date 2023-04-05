@@ -16,7 +16,7 @@
   "fichier, les numéros des lignes où elle apparaissent et le contenu de la "  \
   "ligne. "                                                                    \
   "Si au moins deux noms de fichiers en argument sur la ligne de commande, "   \
-  "affich#include <ctype.h>e pour chaque ligne de texte non vide apparaissant" \
+  "affiche pour chaque ligne de texte non vide apparaissant" \
   "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
   "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
 
@@ -101,6 +101,7 @@ int main(int argc, const char *argv[]) {
   returnopt res;
   if ((res = opt_init(argc, argv, suppopt, NBOPTION, &cntxt,
       DESC, USAGE, (void *(*)(void *, const void *))addfile)) != SUCCESS) {
+        TRACK
     if (res == HELP) {
       goto dispose;
     }
@@ -160,7 +161,7 @@ int main(int argc, const char *argv[]) {
               }
             } else {
               int *cpt = da_ref(cptt, k);
-              (*cpt)++;
+              *cpt += 1;
             }
           } else {
             if (da_length(cptr) <= k + 1) {
