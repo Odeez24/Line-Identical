@@ -198,6 +198,7 @@ int main(int argc, const char *argv[]) {
               *cpt = 1;
             }
             if (da_add(cptt, cpt) == NULL) {
+
               goto error_capacity;
             }
             if (holdall_put(hascpt, cptt) != 0) {

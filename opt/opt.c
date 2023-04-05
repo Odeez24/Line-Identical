@@ -15,55 +15,68 @@ struct opt {
 
 //--- Fonction interne ---------------------------------------------------------
 
-//  est_prefixe : Test si la chaîne de caractére pointer par s1 est un prefixe
-//    de celle pointer par s2.
-//    Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie le reste de
-//    s2 qui n'est pas dans s1
-//static const char * est_prefixe(const char *s1, const char *s2) {
-  //if (*s1 == '\0'){
-    //return s2;
-  //}
-  //if (*s2 == '\0' || *s1 != *s2){
-    //return NULL;
-  //}
-  //return est_prefixe(s1 + 1, s2 + 1);
-//}
-
-const char *opt_select(opt *optsupp, const char **argv, int k) {
-  if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
-    return argv[k + 1];
-  } else if (strcmp(optsupp->longopt, argv[k]) == 0 && optsupp->arg){
-    //return est_prefixe(optsupp->longopt, argv[k]);
-    return argv[k + 1];
+//  est_prefixe : Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie
+//    le reste de s2 qui n'est pas dans s1.
+static const char *suffixe(const char *s1, const char *s2) {
+  if (*s1 == '\0'){
+    return s2;
   }
-  return argv[k];
+  if (*s2 == '\0' || *s1 != *s2){
+    return NULL;
+  }
+  return suffixe (s1 + 1, s2 + 1);
+}
+
+const char *opt_parse(opt *optn, const char *argv, char *s) {
+  int i = 0;
+  while (optn->longopt[i] == argv[i]) {
+    s[i] = argv[i];
+    i++;
+  }
+  return s;
 }
 
 typedef enum {
   NOT_OPT,
-  ARG,
   ERR_ADDTEST,
-  SUCCESSTEST,
+  SHORTOPT,
+  SHORTOPTARG,
+  LONGOPT,
 } returntest;
 
 
 static returntest opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
   size_t nbopt) {
-  size_t nb = 0;
   for (size_t i = 0; i < nbopt; ++i){
-    if (strcmp((optsupp[i])->shortopt, argv[k]) == 0
-      || strcmp((optsupp[i])->longopt, argv[k]) == 0) {
-      if ((optsupp[i]->fun (cntxt, (opt_select(optsupp[i], argv, k)))) != 0){
-        return ERR_ADDTEST;
+    if (strcmp((optsupp[i])->shortopt, argv[k]) == 0) {
+      if (optsupp[i]->arg){
+        if ((optsupp[i]->fun (cntxt, argv[k + 1]))  != 0){
+          return ERR_ADDTEST;
+        }
+        return SHORTOPTARG;
+      } else {
+        if ((optsupp[i]->fun (cntxt, argv[k]))  != 0){
+          return ERR_ADDTEST;
+        }
+        return SHORTOPT;
       }
-    } else {
-      ++nb;
     }
+    char *s = malloc(strlen((optsupp[i])->longopt));
+    if (strcmp((optsupp[i])->longopt, opt_parse(optsupp[i], argv[k], s)) == 0) {
+      if (optsupp[i]->arg){
+        if ((optsupp[i]->fun (cntxt, (suffixe(optsupp[i]->longopt, argv[k])))) != 0){
+          return ERR_ADDTEST;
+        }
+      } else {
+        if ((optsupp[i]->fun (cntxt, argv[k])) != 0){
+          return ERR_ADDTEST;
+        }
+      }
+      return LONGOPT;
+    }
+    free(s);
   }
-  if (nb == nbopt) {
-    return NOT_OPT;
-  }
-  return SUCCESSTEST;
+  return NOT_OPT;
 }
 
 //--- Fonctions opt ------------------------------------------------------------
@@ -118,9 +131,9 @@ returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
       }
       return HELP;
     }
-
     int res;
-    if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != SUCCESSTEST){
+    if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != SHORTOPT
+      || res != LONGOPT){
       if (res == NOT_OPT) {
         if (fun(cntxt, argv[k]) == NULL){
           return ERR_ADD;
@@ -128,6 +141,10 @@ returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
       } else if (res == ERR_ADDTEST) {
         return ERR_OPT;
       }
+    }
+
+    if (res == SHORTOPTARG) {
+      k++;
     }
   }
   return SUCCESS;
