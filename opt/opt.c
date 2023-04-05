@@ -1,7 +1,7 @@
 // Partie implémentation d'un module pour la gestion d'otion (opt)
 
 #include "opt.h"
-
+#define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
 
 //--- Définition opt -----------------------------------------------------------
 struct opt {
@@ -29,17 +29,18 @@ static const char * est_prefixe(const char *s1, const char *s2) {
   return est_prefixe(s1 + 1, s2 + 1);
 }
 
-const char *opt_select(opt *optsupp, char **argv, int k) {
+const char *opt_select(opt *optsupp, const char **argv, int k) {
   if (strcmp(optsupp->shortopt, argv[k]) == 0 && optsupp->arg){
     return argv[k + 1];
   } else if (strcmp(optsupp->longopt, argv[k]) == 0 && optsupp->arg){
-    return est_prefixe(optsupp->longopt, argv[k]);
+    //return est_prefixe(optsupp->longopt, argv[k]);
+    return argv[k + 1];
   }
   return argv[k];
 }
 
 
-static int opt_test(void * cntxt, opt **optsupp, char **argv, int k,
+static int opt_test(void * cntxt, opt **optsupp, const char **argv, int k,
   size_t nbopt) {
   size_t nb = 0;
   for (size_t i = 0; i < nbopt; ++i){
@@ -83,15 +84,15 @@ void opt_dispose (opt **aopt){
   free (*aopt);
 }
 
-#define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s : \n\t%s\n", opta->shortopt, \
+#define PRINTF_OPT(opta) printf("\t%s%s\t or %s%s :\t%s\n", opta->shortopt, \
   (opta->arg ? " [option]" : ""), opta->longopt,                               \
-  (opta->arg ? "[option]" : ""), opta->desc);                                 \
+  (opta->arg ? " [option]" : ""), opta->desc);                                 \
 
 #define SHORTHELP "-h"
 #define LONGHELP "--help"
 
 
-returnopt opt_init(int argc, char **argv, opt **optsupp, size_t nbopt,
+returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
   void *cntxt, const char *desc, const char *usage,
   void *(*fun) (void *, const void *)){
   if (argc <= 2){
@@ -114,6 +115,7 @@ returnopt opt_init(int argc, char **argv, opt **optsupp, size_t nbopt,
     int res;
     if ((res = opt_test(cntxt, optsupp, argv, k, nbopt)) != 0){
       if (res > 0) {
+        TRACK
         if (fun(cntxt, argv[k]) == NULL){
           return ERR_ADD;
         }

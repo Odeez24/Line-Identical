@@ -39,7 +39,7 @@ extern void opt_dispose (opt **aopt);
 //    optlist, le reste sera mis dans le tableaux other.
 //    Renvoie ERR_OPT en cas probléme de lecture, NO_OPT si il n'y a pas
 //    d'option passer en argument, SUCCESS sinon.
-extern returnopt opt_init(int argc, char **argv, opt **optsupp,
+extern returnopt opt_init(int argc, const char **argv, opt **optsupp,
   size_t nbopt, void *cntxt, const char *desc, const char *usage,
    void * (*fun) (void *, const void *));
 

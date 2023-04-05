@@ -20,7 +20,7 @@
   "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
   "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
 
-#define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ..."
+#define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ...\n"
 
 //--- Création des options -----------------------------------------------------
 
@@ -65,13 +65,13 @@ static int addline(da *p, FILE *filename, cnxt *cntxt);
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
 //    Renvoie NULL en cas de dépassement de capacité, filename sinon.
-static void *addfile(da *p, char *filename);
+static void *addfile(cnxt *p, const char *filename);
 
 static int filter_choose(cnxt *cntxt, const char *s);
 
 static int transform_choose(cnxt *cntxt, const char *s);
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
   if (argc == 1) {
     fprintf(stderr, "Illegal number of parameters or unrecognized option.\n");
     printf(USAGE, argv[0], argv[0]);
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
       "Met tous les caractéres enregistrer en majuscule", false,
       (int (*)(const void *, const void *))transform_choose);
   opt *opt2 = opt_gen("-f", "--filter=",
-      "Applique le filtre passer en argument", false,
+      "Applique le filtre passer en argument", true,
       (int (*)(const void *, const void *))filter_choose);
   opt *suppopt[NBOPTION] = {
     opt1, opt2
@@ -113,13 +113,16 @@ int main(int argc, char *argv[]) {
     }
     if (res == NO_OPT) {
       for (int k = 1; k < argc; ++k) {
-        if (addfile(cntxt.filelist, argv[k]) == NULL) {
+        if (addfile(&cntxt, argv[k]) == NULL) {
           goto error_capacity;
         }
       }
     }
   }
   size_t len = da_length(cntxt.filelist);
+  for (size_t k = 0; k < len; ++k) {
+    fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
+  }
   for (size_t k = 0; k < len; ++k) {
     FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
     da *line = da_empty();
@@ -131,7 +134,6 @@ int main(int argc, char *argv[]) {
       }
       goto error_capacity;
     }
-    int c = 1;
     int nbline = 1;
     int resline;
     while ((resline = addline(line, f, &cntxt)) == 0) {
@@ -156,16 +158,12 @@ int main(int argc, char *argv[]) {
               if (da_add(cptr, cpt) == NULL) {
                 goto error_capacity;
               }
-              if (holdall_put(hascpt, cptr) != 0) {
-                free(cptr);
-                goto error_capacity;
-              }
             } else {
               int *cpt = da_ref(cptt, k);
               (*cpt)++;
             }
           } else {
-            if (c == 1) {
+            if (da_length(cptr) <= k + 1) {
               int *cpt = malloc(sizeof *cpt);
               if (cpt == NULL) {
                 goto error_capacity;
@@ -193,7 +191,11 @@ int main(int argc, char *argv[]) {
             if (cpt == NULL) {
               goto error_capacity;
             }
-            *cpt = nbline;
+            if (len == 1){
+              *cpt = nbline;
+            } else {
+              *cpt = 1;
+            }
             if (da_add(cptt, cpt) == NULL) {
               goto error_capacity;
             }
@@ -352,15 +354,17 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
   return 0;
 }
 
-void *addfile(da *p, char *filename) {
-  if (p == NULL) {
+void *addfile(cnxt *p, const char *filename) {
+  if (p->filelist== NULL) {
     return NULL;
   }
-  if (da_add(p, filename) == NULL) {
+  if (da_add(p->filelist, filename) == NULL) {
     return NULL;
   }
   return (char *) filename;
 }
+
+//--- Fonction pour les option -------------------------------------------------
 
 int transform_choose(cnxt *cntxt, const char *s) {
   if (strcmp("-u", s) == 0 || strcmp("--uppercase", s) == 0) {
