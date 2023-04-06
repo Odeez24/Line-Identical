@@ -52,6 +52,8 @@ extern void *da_add(da *p, const void *ref);
 //    sinon.
 extern void *da_ref(da *p, size_t i);
 
+//extern void *da_mod_ref(da*p, size_t i, const void *ref);
+
 //  da_length : Renvoie la longueur du tableaux associés à p.
 extern size_t da_length(da *d);
 

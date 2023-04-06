@@ -121,9 +121,9 @@ int main(int argc, const char *argv[]) {
     }
   }
   size_t len = da_length(cntxt.filelist);
-  for (size_t k = 0; k < len; ++k) {
-    fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
-  }
+  //for (size_t k = 0; k < len; ++k) {
+    //fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
+  //}
   for (size_t k = 0; k < len; ++k) {
     FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
     da *line = da_empty();
@@ -160,7 +160,7 @@ int main(int argc, const char *argv[]) {
                 goto error_capacity;
               }
             } else {
-              int *cpt = da_ref(cptt, k);
+              int *cpt = da_ref(cptr, k);
               *cpt += 1;
             }
           } else {
@@ -178,7 +178,7 @@ int main(int argc, const char *argv[]) {
                 goto error_capacity;
               }
             } else {
-              int *cpt = da_ref(cptt, k);
+              int *cpt = da_ref(cptr, k);
               (*cpt)++;
             }
           }
@@ -305,7 +305,8 @@ static int scptr_display_mult(const char *s, da *cpt) {
     return 0;
   }
   for (size_t k = 0; k < da_length(cpt); k++) {
-    printf("%ls\t", (int *) da_ref(cpt, k));
+    int *c = (da_ref(cpt, k));
+    printf("%d\t", *c);
   }
   return printf("%s\n", s) < 0;
 }

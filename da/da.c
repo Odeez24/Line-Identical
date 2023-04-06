@@ -90,6 +90,13 @@ void *da_ref(da *p, size_t i) {
   return (void *) p->aref[i];
 }
 
+//void *da_mod_ref(da*p, size_t i, const void *ref) {
+  //if (p == NULL || i > LENGTH(p)){
+    //return NULL;
+  //}
+  //p->aref[i] = ref;
+  //return (void *)ref;
+//}
 
 size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
