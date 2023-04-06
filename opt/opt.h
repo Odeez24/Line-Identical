@@ -28,9 +28,9 @@ typedef enum {
 //    Renvoie NULL en cas de dépassement de capacité, sinon renvoie un pointer
 //    vers la zone méoire allouer
 extern opt *opt_gen(const char *shortopt, const char *longopt, const char *desc,
-    bool arg, int (*fun) (const void *, const void *));
+    bool arg, int (*fun)(const void *, const void *));
 
-extern void opt_dispose (opt **aopt);
+extern void opt_dispose(opt **aopt);
 
 //  opt_parse : Prend en paramétre les nombre d'argument passer ainsi que le
 //    tableau contenant les arguments  et les sépares dans deux tableaux passer
@@ -40,7 +40,7 @@ extern void opt_dispose (opt **aopt);
 //    Renvoie ERR_OPT en cas probléme de lecture, NO_OPT si il n'y a pas
 //    d'option passer en argument, SUCCESS sinon.
 extern returnopt opt_init(int argc, const char **argv, opt **optsupp,
-  size_t nbopt, void *cntxt, const char *desc, const char *usage,
-   void * (*fun) (void *, const void *));
+    size_t nbopt, void *cntxt, const char *desc, const char *usage,
+    void *(*fun)(void *, const void *));
 
 #endif

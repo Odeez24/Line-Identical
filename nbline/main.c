@@ -101,7 +101,7 @@ int main(int argc, const char *argv[]) {
   returnopt res;
   if ((res = opt_init(argc, argv, suppopt, NBOPTION, &cntxt,
       DESC, USAGE, (void *(*)(void *, const void *))addfile)) != SUCCESS) {
-        TRACK
+    TRACK
     if (res == HELP) {
       goto dispose;
     }
@@ -122,7 +122,7 @@ int main(int argc, const char *argv[]) {
   }
   size_t len = da_length(cntxt.filelist);
   //for (size_t k = 0; k < len; ++k) {
-    //fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
+  //fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
   //}
   for (size_t k = 0; k < len; ++k) {
     FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
@@ -138,7 +138,7 @@ int main(int argc, const char *argv[]) {
     int nbline = 1;
     int resline;
     while ((resline = addline(line, f, &cntxt)) == 0) {
-      if (da_length(line) != 0){
+      if (da_length(line) != 0) {
         char *s = malloc(da_length(line) + 1);
         if (s == NULL) {
           goto error_capacity;
@@ -192,13 +192,12 @@ int main(int argc, const char *argv[]) {
             if (cpt == NULL) {
               goto error_capacity;
             }
-            if (len == 1){
+            if (len == 1) {
               *cpt = nbline;
             } else {
               *cpt = 1;
             }
             if (da_add(cptt, cpt) == NULL) {
-
               goto error_capacity;
             }
             if (holdall_put(hascpt, cptt) != 0) {
@@ -263,8 +262,8 @@ error:
   r = EXIT_FAILURE;
   goto dispose;
 dispose:
-if (suppopt != NULL) {
-    for (int k = 0; k < NBOPTION; ++k){
+  if (suppopt != NULL) {
+    for (int k = 0; k < NBOPTION; ++k) {
       opt_dispose(&suppopt[k]);
     }
   }
@@ -274,7 +273,7 @@ if (suppopt != NULL) {
     holdall_apply(has, rfree);
   }
   if (hascpt != NULL) {
-    holdall_apply(hascpt, (int (*) (void *))rdafree);
+    holdall_apply(hascpt, (int (*)(void *))rdafree);
   }
   holdall_dispose(&has);
   holdall_dispose(&hascpt);
@@ -295,6 +294,9 @@ static int scptr_display_one(const char *s, da *cpt) {
   }
   for (size_t k = 0; k < da_length(cpt); k++) {
     int *c = (da_ref(cpt, k));
+    if (k == da_length(cpt) - 1) {
+      printf("%d", *c);
+    }
     printf("%d,", *c);
   }
   return printf("\t%s\n", s) < 0;
@@ -316,7 +318,9 @@ int rfree(void *ptr) {
   return 0;
 }
 
-int rdafree(da *p){
+int rdafree(da *p) {
+  //TRACK
+  //fprintf(stderr, "%p\n", (void *)&p);
   da_dispose(&p);
   return 0;
 }
@@ -337,7 +341,7 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
       }
     }
   }
-  if (da_length(p) != 0){
+  if (da_length(p) != 0) {
     char *s = malloc(sizeof *s);
     if (s == NULL) {
       return -1;
@@ -358,7 +362,7 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
 }
 
 void *addfile(cnxt *p, const char *filename) {
-  if (p->filelist== NULL) {
+  if (p->filelist == NULL) {
     return NULL;
   }
   if (da_add(p->filelist, filename) == NULL) {
