@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "stdint.h"
 
 //  Fonctionnement général :
 //  - la structure de données ne stocke pas d'objets mais des références vers
@@ -51,8 +52,6 @@ extern void *da_add(da *p, const void *ref);
 //    Renvoie NULL si p est vide ou si i est supérieur a la longueur de p
 //    sinon.
 extern void *da_ref(da *p, size_t i);
-
-//extern void *da_mod_ref(da*p, size_t i, const void *ref);
 
 //  da_length : Renvoie la longueur du tableaux associés à p.
 extern size_t da_length(da *d);

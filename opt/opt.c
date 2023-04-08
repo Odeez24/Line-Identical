@@ -1,7 +1,6 @@
 // Partie implémentation d'un module pour la gestion d'otion (opt)
 
 #include "opt.h"
-#define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
 
 //--- Définition opt -----------------------------------------------------------
 struct opt {
@@ -14,7 +13,7 @@ struct opt {
 
 //--- Fonction interne ---------------------------------------------------------
 
-//  est_prefixe : Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie
+//  suffixe : Renvoie NULL si s1 n'est pas un préfixe de s2, sinon renvoie
 //    le reste de s2 qui n'est pas dans s1.
 static const char *suffixe(const char *s1, const char *s2) {
   if (*s1 == '\0') {
@@ -26,10 +25,13 @@ static const char *suffixe(const char *s1, const char *s2) {
   return suffixe(s1 + 1, s2 + 1);
 }
 
-char *opt_parse(opt *optn, const char *argv, char *s) {
+//  prefix : Affecte a s la partie commune entre les chaînes de caractére s1 et
+//    s2.
+//  Renvoie NULL si les deux chaînes n'ont rien en commun, s sinon.
+static char *prefix(const char *s1, const char *s2, char *s) {
   int i = 0;
-  while (optn->longopt[i] == argv[i]) {
-    s[i] = argv[i];
+  while (s1[i] == s2[i]) {
+    s[i] = s2[i];
     i++;
   }
   if (i == 0) {
@@ -38,14 +40,26 @@ char *opt_parse(opt *optn, const char *argv, char *s) {
   return s;
 }
 
+//  returntest : Enumération des différente valeur de retour de la fonction
+//    opt_test.
 typedef enum {
   NOT_OPT,
   ERR_ADDTEST,
+  CAP_ERR,
   SHORTOPT,
   SHORTOPTARG,
   LONGOPT,
 } returntest;
 
+//  opt_test : Test si l'argument d'indice k contenu dans argv est une option
+//    contenu dans le tableau optsupp. Si oui alors appelle sa fonction
+//    d'initialisation.
+//  Renvoie NOT_OPT si l'argument n'est pas une option, ERR_ADDTEST si une
+//    erreur est survenu lors de l'exécution de la fonction d'initialisation
+//    d'une option, CAP_ERR en cas de dépassement de capacité. SHORTOPT si
+//    l'argument est la version courte de l'option, SHORTOPTARG si l'argument
+//    est la version courte de l'option et que l'option prend un argument ou
+//    LONGOPT si l'argument est la version longue de l'option.
 static returntest opt_test(void *cntxt, opt **optsupp, const char **argv, int k,
     size_t nbopt) {
   for (size_t i = 0; i < nbopt; ++i) {
@@ -63,19 +77,25 @@ static returntest opt_test(void *cntxt, opt **optsupp, const char **argv, int k,
       }
     }
     char *s = malloc(strlen((optsupp[i])->longopt));
-    s = opt_parse(optsupp[i], argv[k], s);
+    if (s == NULL) {
+      return CAP_ERR;
+    }
+    s = prefix(optsupp[i]->longopt, argv[k], s);
     if (s != NULL) {
       if (strcmp((optsupp[i])->longopt, s) == 0) {
         if (optsupp[i]->arg) {
           if ((optsupp[i]->fun(cntxt,
               (suffixe(optsupp[i]->longopt, argv[k])))) != 0) {
+            free(s);
             return ERR_ADDTEST;
           }
         } else {
           if ((optsupp[i]->fun(cntxt, argv[k])) != 0) {
+            free(s);
             return ERR_ADDTEST;
           }
         }
+        free(s);
         return LONGOPT;
       }
     }
@@ -142,6 +162,8 @@ returnopt opt_init(int argc, const char **argv, opt **optsupp, size_t nbopt,
         }
       } else if (res == ERR_ADDTEST) {
         return ERR_OPT;
+      } else if (res == CAP_ERR) {
+        return ERROR;
       }
     }
     if (res == SHORTOPTARG) {

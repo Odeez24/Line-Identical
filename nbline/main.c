@@ -16,7 +16,7 @@
   "fichier, les numéros des lignes où elle apparaissent et le contenu de la "  \
   "ligne. "                                                                    \
   "Si au moins deux noms de fichiers en argument sur la ligne de commande, "   \
-  "affiche pour chaque ligne de texte non vide apparaissant" \
+  "affiche pour chaque ligne de texte non vide apparaissant"                   \
   "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
   "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
 
@@ -38,37 +38,47 @@ typedef struct {
 //    et Pike pour les chaines de caractères.
 static size_t str_hashfun(const char *s);
 
-//  scptr_display_one : affiche sur la sortie standard le tableau pointer par
-// *cpt, le caractère
+//  scptr_display : affiche sur la sortie standard *cptr, le caractère
 //    tabulation, la chaine de caractères pointée par s et la fin de ligne.
-//    Renvoie zéro en cas de succès, une valeur non nulle en cas d'échec.
-static int scptr_display_one(const char *s, da *cpt);
+//  Renvoie zéro en cas de succès, une valeur non nulle en cas d'échec.
 
-//  scptr_display_mult : affiche sur la sortie standard le chaque éléments
-//    tableau d'entier pointer par *cpt séparer par une tabulation, le caractère
-//    tabulation, la chaine de caractères pointée par s et la fin de ligne.
-//    Renvoie zéro en cas de succès, une valeur non nulle en cas d'échec.
-static int scptr_display_mult(const char *s, da *cpt);
+//  lnid_display : Affiche sur la sortire standart le contenu du tableau cpt,
+//    le caractére tabulation si la longueur de cpt est égale à celle du tableau
+//    filelist contenu dans cntxt. Ou une virgule si la longueur de cpt est
+//    supérieur ou  égale a deux. Puis affiche la chaîne de caratére s et la
+//    fin de ligne.
+//  Renvoie zéro en cas dxe succes une valeur non nulle sinon.
+static int lnid_display(cnxt *cntxt, const char *s, da *cpt);
 
 //  rfree : libère la zone mémoire pointée par ptr et renvoie zéro.
 static int rfree(void *ptr);
 
+//  rdefree : Libére le tableau dnamique pointée par p et renvoi zéro.
 static int rdafree(da *p);
 
 //  addline : On suppose que le fichier filename est ouvert en lecture. Tente
-//    sinon de lire une ligne du filename et de l'ajouter au tableaux
-//    dynamique pointer par p.
-//    Renvoie une valeur négative en cas de dépassement de capacité ou de
-//    probleme de lecture sur le fichier, renvoie zéro sinon;
+//    de lire une ligne de filename caractére par caratére et les ajoutent à p
+//    si ils respectent le filtre liée a cntxt si celui ci est défini et
+//    transforme les caractéres selon la fopnction transform decntxt si celle-ci
+//     est défini.
+//  Renvoie zéro en cas de succès, une valeur négative en cas de probléme de
+//    lecture ou de dépassement de capacité, une valeur positive si la fin de
+//    fichier est atteinte.
 static int addline(da *p, FILE *filename, cnxt *cntxt);
 
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
-//    Renvoie NULL en cas de dépassement de capacité, filename sinon.
+//  Renvoie NULL en cas de dépassement de capacité, filename sinon.
 static void *addfile(cnxt *p, const char *filename);
 
+//  filter_choose : Affecte aux champ filter de cntxt la fonction lier a la
+//    chaîne de caractére s si celle_ci correspond bien.
+//  Renvoie zéro en cas de succés, une valeur négative sinon.
 static int filter_choose(cnxt *cntxt, const char *s);
 
+//  transform_choose : Affecte aux champ transform de cntxt la fonction lier a
+//    la chaîne de caractére s si celle_ci correspond bien.
+//  Renvoie zéro en cas de succés, une valeur négative sinon.
 static int transform_choose(cnxt *cntxt, const char *s);
 
 int main(int argc, const char *argv[]) {
@@ -101,7 +111,6 @@ int main(int argc, const char *argv[]) {
   returnopt res;
   if ((res = opt_init(argc, argv, suppopt, NBOPTION, &cntxt,
       DESC, USAGE, (void *(*)(void *, const void *))addfile)) != SUCCESS) {
-    TRACK
     if (res == HELP) {
       goto dispose;
     }
@@ -118,22 +127,26 @@ int main(int argc, const char *argv[]) {
           goto error_capacity;
         }
       }
+    } else if (res == ERROR) {
+      goto error_capacity;
     }
   }
   size_t len = da_length(cntxt.filelist);
-  //for (size_t k = 0; k < len; ++k) {
-  //fprintf(stderr, "%s\n", (char *)da_ref(cntxt.filelist, k));
-  //}
+  if (len == 0) {
+    printf("No file as entry");
+    goto dispose;
+  }
+  da *line = da_empty();
+  da *cptt = da_empty();
+  if (line == NULL || cptt == NULL) {
+    goto error_capacity;
+  }
   for (size_t k = 0; k < len; ++k) {
     FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
-    da *line = da_empty();
-    da *cptt = da_empty();
-    if (line == NULL || cptt == NULL || f == NULL) {
-      if (f == NULL) {
-        TRACK
-        goto error_file;
-      }
-      goto error_capacity;
+    if (f == NULL) {
+      fprintf(stderr, "*** Error: An error on the file %s occurs\n",
+          (char *) da_ref(cntxt.filelist, k));
+      goto error;
     }
     int nbline = 1;
     int resline;
@@ -157,6 +170,7 @@ int main(int argc, const char *argv[]) {
               }
               *cpt = nbline;
               if (da_add(cptr, cpt) == NULL) {
+                free(cpt);
                 goto error_capacity;
               }
             } else {
@@ -164,93 +178,86 @@ int main(int argc, const char *argv[]) {
               *cpt += 1;
             }
           } else {
-            if (da_length(cptr) <= k + 1) {
+            if (da_length(cptr) < k + 1) {
               int *cpt = malloc(sizeof *cpt);
               if (cpt == NULL) {
                 goto error_capacity;
               }
               *cpt = 1;
               if (da_add(cptr, cpt) == NULL) {
-                goto error_capacity;
-              }
-              if (holdall_put(hascpt, cptr) != 0) {
-                free(cptr);
+                free(cpt);
                 goto error_capacity;
               }
             } else {
               int *cpt = da_ref(cptr, k);
-              (*cpt)++;
+              *cpt += 1;
             }
           }
         } else {
-          if (k == 0) {
-            if (holdall_put(has, s) != 0) {
-              free(s);
-              goto error_capacity;
-            }
-            int *cpt = malloc(sizeof *cpt);
-            if (cpt == NULL) {
-              goto error_capacity;
-            }
-            if (len == 1) {
-              *cpt = nbline;
-            } else {
-              *cpt = 1;
-            }
-            if (da_add(cptt, cpt) == NULL) {
-              goto error_capacity;
-            }
-            if (holdall_put(hascpt, cptt) != 0) {
-              free(cptr);
-              goto error_capacity;
-            }
-            if (hashtable_add(ht, s, cptt) == NULL) {
-              goto error_capacity;
-            }
+          if (holdall_put(has, s) != 0) {
+            free(s);
+            goto error_capacity;
+          }
+          int *cpt = malloc(sizeof *cpt);
+          if (cpt == NULL) {
+            goto error_capacity;
+          }
+          if (len == 1) {
+            *cpt = nbline;
+          } else {
+            *cpt = 1;
+          }
+          if (da_add(cptt, cpt) == NULL) {
+            free(cpt);
+            goto error_capacity;
+          }
+          if (holdall_put(hascpt, cptt) != 0) {
+            free(cptt);
+            goto error_capacity;
+          }
+          if (hashtable_add(ht, s, cptt) == NULL) {
+            goto error_capacity;
+          }
+          cptt = da_empty();
+          if (cptt == NULL) {
+            goto error_capacity;
           }
         }
-        da_dispose(&line);
-        line = da_empty();
-        cptt = da_empty();
-        if (line == NULL || cptt == NULL) {
-          goto error_capacity;
+        if (len == 1) {
+          ++nbline;
         }
       }
-      if (len == 1) {
-        ++nbline;
+      da_dispose(&line);
+      line = da_empty();
+      if (line == NULL) {
+        goto error_capacity;
       }
+    }
+    da_dispose(&line);
+    line = da_empty();
+    if (line == NULL) {
+      goto error_capacity;
     }
     if (resline < 0) {
       goto error_read;
     }
-    da_dispose(&line);
-    da_dispose(&cptt);
     if (!feof(f)) {
       goto error_read;
     }
     if (fclose(f) != 0) {
-      goto error_file;
+      fprintf(stderr, "*** Error: An error on the file %s occurs\n",
+          (char *) da_ref(cntxt.filelist, k));
+      goto error;
     }
   }
-  if (len == 1) {
-    if (holdall_apply_context(has,
-        ht, (void *(*)(void *, void *))hashtable_search,
-        (int (*)(void *, void *))scptr_display_one) != 0) {
-      goto error_write;
-    }
-  } else {
-    if (holdall_apply_context(has,
-        ht, (void *(*)(void *, void *))hashtable_search,
-        (int (*)(void *, void *))scptr_display_mult) != 0) {
-      goto error_write;
-    }
+  if (holdall_apply_context2(has,
+      ht, (void *(*)(void *, void *))hashtable_search,
+      &cntxt, (int (*)(void *, void *, void *))lnid_display) != 0) {
+    goto error_write;
   }
   goto dispose;
 error_capacity:
   fprintf(stderr, "*** Error: Not enough memory\n");
-  goto error;
-error_file:
-  fprintf(stderr, "*** Error: An error on the file occurs\n");
   goto error;
 error_read:
   fprintf(stderr, "*** Error: A read error occurs\n");
@@ -262,6 +269,8 @@ error:
   r = EXIT_FAILURE;
   goto dispose;
 dispose:
+  da_dispose(&line);
+  da_dispose(&cptt);
   if (suppopt != NULL) {
     for (int k = 0; k < NBOPTION; ++k) {
       opt_dispose(&suppopt[k]);
@@ -288,29 +297,31 @@ size_t str_hashfun(const char *s) {
   return h;
 }
 
-static int scptr_display_one(const char *s, da *cpt) {
-  if (da_length(cpt) < 2) {
-    return 0;
-  }
-  for (size_t k = 0; k < da_length(cpt); k++) {
-    int *c = (da_ref(cpt, k));
-    if (k == da_length(cpt) - 1) {
-      printf("%d", *c);
+static int lnid_display(cnxt *cntxt, const char *s, da *cpt) {
+  size_t len = da_length(cntxt->filelist);
+  if (len == 1) {
+    if (da_length(cpt) < 2) {
+      return 0;
     }
-    printf("%d,", *c);
+    for (size_t k = 0; k < da_length(cpt); k++) {
+      int *c = (da_ref(cpt, k));
+      if (k == da_length(cpt) - 1) {
+        printf("%d", *c);
+      } else {
+        printf("%d,", *c);
+      }
+    }
+    return printf("\t%s\n", s) < 0;
+  } else {
+    if (da_length(cpt) < len) {
+      return 0;
+    }
+    for (size_t k = 0; k < da_length(cpt); k++) {
+      int *c = (da_ref(cpt, k));
+      printf("%d\t", *c);
+    }
+    return printf("%s\n", s) < 0;
   }
-  return printf("\t%s\n", s) < 0;
-}
-
-static int scptr_display_mult(const char *s, da *cpt) {
-  if (da_length(cpt) < 2) {
-    return 0;
-  }
-  for (size_t k = 0; k < da_length(cpt); k++) {
-    int *c = (da_ref(cpt, k));
-    printf("%d\t", *c);
-  }
-  return printf("%s\n", s) < 0;
 }
 
 int rfree(void *ptr) {
@@ -319,8 +330,6 @@ int rfree(void *ptr) {
 }
 
 int rdafree(da *p) {
-  //TRACK
-  //fprintf(stderr, "%p\n", (void *)&p);
   da_dispose(&p);
   return 0;
 }
@@ -336,6 +345,7 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
         }
         *s = (char) c;
         if (da_add(p, s) == NULL) {
+          free(s);
           return -1;
         }
       }
@@ -346,9 +356,9 @@ int addline(da *p, FILE *filename, cnxt *cntxt) {
     if (s == NULL) {
       return -1;
     }
-    c = '\0';
-    *s = (char) c;
+    *s = '\0';
     if (da_add(p, s) == NULL) {
+      free(s);
       return -1;
     }
   }

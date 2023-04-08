@@ -2,9 +2,6 @@
 //    de tableau dynamique
 
 #include "da.h"
-#include "stdint.h"
-
-#define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
 
 #define DA__CAPACITY_MIN 1
 #define DA__CAPACITY_MUL 2
@@ -21,14 +18,6 @@ struct da {
 #define IS_EMPTY(p)    ((p)->length == 0)
 #define LENGTH(p)      ((p)->length)
 #define CAPACITY(p)    ((p)->capacity)
-
-//--- Fonction interne ---------------------------------------------------------
-//  line : Ajoute une ligne du fichier filename au tableaux dynamique pointer
-//    par p.
-//    Renvoie une valeur négative en cas de dépassement de capacité ou de
-//    probleme de lecture ou une valeur positive si on arrive a la fin du
-//    fichier la valeur null sinon.
-int line(da *p, FILE *filename);
 
 //--- Fonctions da -------------------------------------------------------------
 
@@ -89,14 +78,6 @@ void *da_ref(da *p, size_t i) {
   }
   return (void *) p->aref[i];
 }
-
-//void *da_mod_ref(da*p, size_t i, const void *ref) {
-//if (p == NULL || i > LENGTH(p)){
-//return NULL;
-//}
-//p->aref[i] = ref;
-//return (void *)ref;
-//}
 
 size_t da_length(da *p) {
   return IS_EMPTY(p) ? 0 : LENGTH(p);
