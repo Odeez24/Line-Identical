@@ -98,11 +98,14 @@ int main(int argc, const char *argv[]) {
   };
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
+  da *line = da_empty();
+  da *cptt = da_empty();
   holdall *has = holdall_empty();
   holdall *hascpt = holdall_empty();
   hashtable *ht = hashtable_empty((int (*)(const void *, const void *))strcmp,
       (size_t (*)(const void *))str_hashfun);
-  if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL) {
+  if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL ||
+    line == NULL || cptt == NULL) {
     goto error_capacity;
   }
   cnxt cntxt = {
@@ -135,11 +138,6 @@ int main(int argc, const char *argv[]) {
   if (len == 0) {
     printf("No file as entry");
     goto dispose;
-  }
-  da *line = da_empty();
-  da *cptt = da_empty();
-  if (line == NULL || cptt == NULL) {
-    goto error_capacity;
   }
   for (size_t k = 0; k < len; ++k) {
     FILE *f = fopen(da_ref(cntxt.filelist, k), "rb");
