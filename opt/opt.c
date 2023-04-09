@@ -28,7 +28,7 @@ static const char *suffixe(const char *s1, const char *s2) {
 //  prefix : Affecte a s la partie commune entre les chaînes de caractére s1 et
 //    s2.
 //  Renvoie NULL si les deux chaînes n'ont rien en commun, s sinon.
-static char *prefix(const char *s1, const char *s2, char *s) {
+void *prefix(const char *s1, const char *s2, char *s) {
   int i = 0;
   while (s1[i] == s2[i]) {
     s[i] = s2[i];
@@ -76,30 +76,22 @@ static returntest opt_test(void *cntxt, opt **optsupp, const char **argv, int k,
         return SHORTOPT;
       }
     }
-    char *s = malloc(strlen((optsupp[i])->longopt));
-    if (s == NULL) {
-      return CAP_ERR;
-    }
-    s = prefix(optsupp[i]->longopt, argv[k], s);
-    if (s != NULL) {
+    char s[strlen((optsupp[i])->longopt)];
+    if (prefix(optsupp[i]->longopt, argv[k], s) != NULL) {
       if (strcmp((optsupp[i])->longopt, s) == 0) {
         if (optsupp[i]->arg) {
           if ((optsupp[i]->fun(cntxt,
               (suffixe(optsupp[i]->longopt, argv[k])))) != 0) {
-            free(s);
             return ERR_ADDTEST;
           }
         } else {
           if ((optsupp[i]->fun(cntxt, argv[k])) != 0) {
-            free(s);
             return ERR_ADDTEST;
           }
         }
-        free(s);
         return LONGOPT;
       }
     }
-    free(s);
   }
   return NOT_OPT;
 }

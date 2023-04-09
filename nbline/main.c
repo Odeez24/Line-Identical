@@ -148,9 +148,9 @@ int main(int argc, const char *argv[]) {
     }
     int nbline = 1;
     int resline;
-    while ((resline = addline(line, f, &cntxt)) == 0) {
+    while ((resline = addline(line, f, &cntxt)) >= 0) {
       if (da_length(line) != 0) {
-        char *s = malloc(da_length(line) + 1);
+        char *s = malloc(da_length(line));
         if (s == NULL) {
           goto error_capacity;
         }
@@ -231,6 +231,9 @@ int main(int argc, const char *argv[]) {
       if (line == NULL) {
         goto error_capacity;
       }
+      if (resline > 0) {
+        goto endfile;
+      }
     }
     da_dispose(&line);
     line = da_empty();
@@ -240,7 +243,9 @@ int main(int argc, const char *argv[]) {
     if (resline < 0) {
       goto error_read;
     }
+endfile:
     if (!feof(f)) {
+      TRACK
       goto error_read;
     }
     if (fclose(f) != 0) {
