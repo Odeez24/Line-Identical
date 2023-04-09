@@ -191,6 +191,7 @@ int main(int argc, const char *argv[]) {
               *cpt += 1;
             }
           }
+          free(s);
         } else {
           if (holdall_put(has, s) != 0) {
             free(s);
