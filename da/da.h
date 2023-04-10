@@ -17,8 +17,8 @@
 //  - les fonctions qui possèdent un paramètre de type « da * » ou « da ** » ont
 //      un comportement indéterminé lorsque ce paramètre ou sa déréférence
 //      n'est pas l'adresse d'un contrôleur préalablement renvoyée avec succès
-//      par la fonction pqueue_empty et non révoquée depuis par la
-//      fonction ad_dispose ;
+//      par la fonction da_empty et non révoquée depuis par la
+//      fonction da_dispose ;
 //  - aucune fonction ne peut ajouter NULL à la structure de données ;
 //  - les fonctions de type de retour « void * » renvoient NULL en cas d'échec.
 //      En cas de succès, elles renvoient une référence actuellement ou
@@ -42,6 +42,11 @@ extern da *da_empty();
 //    dynamique associé à *aptr puis affecte NULL à *aptr.
 //    Sans effet si *aptr vaut NULL,
 extern void da_dispose(da **aptr);
+
+//  da_apply : Libère les zones mémoires allouées pointées par le tableaux
+//    pointé par p
+//  Renvoie 0;
+extern int da_apply(da *p);
 
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
 //    selon la méthode de l'ajout en bout de chemin renvoie NULL en cas de

@@ -47,6 +47,13 @@ void da_dispose(da **aptr) {
   return;
 }
 
+int da_apply(da *p){
+  for (size_t k = 0; k < LENGTH(p); ++k) {
+    free((void *)p->aref[k]);
+  }
+  return 0;
+}
+
 void *da_add(da *p, const void *ref) {
   if (ref == NULL) {
     return NULL;

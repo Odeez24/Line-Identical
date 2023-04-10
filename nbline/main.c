@@ -5,6 +5,7 @@
 #include "holdall.h"
 #include "hashtable.h"
 #include "opt.h"
+#include "ds.h"
 
 #define TRACK fprintf(stderr, "*** %s:%d\n", __func__, __LINE__);
 
@@ -64,7 +65,7 @@ static int rdafree(da *p);
 //  Renvoie zéro en cas de succès, une valeur négative en cas de probléme de
 //    lecture ou de dépassement de capacité, une valeur positive si la fin de
 //    fichier est atteinte.
-static int addline(da *p, FILE *filename, cnxt *cntxt);
+static int addline(ds *p, FILE *filename, cnxt *cntxt);
 
 //  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
 //    par p.
@@ -98,7 +99,7 @@ int main(int argc, const char *argv[]) {
   };
   int r = EXIT_SUCCESS;
   da *filelist = da_empty();
-  da *line = da_empty();
+  ds *line = ds_empty();
   da *cptt = da_empty();
   holdall *has = holdall_empty();
   holdall *hascpt = holdall_empty();
@@ -149,14 +150,14 @@ int main(int argc, const char *argv[]) {
     int nbline = 1;
     int resline;
     while ((resline = addline(line, f, &cntxt)) >= 0) {
-      if (da_length(line) != 0) {
-        char *s = malloc(da_length(line));
+      size_t dslen = ds_length(line);
+      if (dslen != 0) {
+        char *s = malloc(dslen);
         if (s == NULL) {
           goto error_capacity;
         }
-        for (size_t k = 0; k < da_length(line); ++k) {
-          char *tmp = da_ref(line, k);
-          s[k] = *tmp;
+        for (size_t k = 0; k < dslen; ++k) {
+          s[k] = ds_ref(line, k);
         }
         da *cptr = hashtable_search(ht, s);
         if (cptr != NULL) {
@@ -226,8 +227,8 @@ int main(int argc, const char *argv[]) {
           ++nbline;
         }
       }
-      da_dispose(&line);
-      line = da_empty();
+      ds_dispose(&line);
+      line = ds_empty();
       if (line == NULL) {
         goto error_capacity;
       }
@@ -235,8 +236,8 @@ int main(int argc, const char *argv[]) {
         goto endfile;
       }
     }
-    da_dispose(&line);
-    line = da_empty();
+    ds_dispose(&line);
+    line = ds_empty();
     if (line == NULL) {
       goto error_capacity;
     }
@@ -245,7 +246,6 @@ int main(int argc, const char *argv[]) {
     }
 endfile:
     if (!feof(f)) {
-      TRACK
       goto error_read;
     }
     if (fclose(f) != 0) {
@@ -273,7 +273,8 @@ error:
   r = EXIT_FAILURE;
   goto dispose;
 dispose:
-  da_dispose(&line);
+  ds_dispose(&line);
+  da_apply(cptt);
   da_dispose(&cptt);
   if (suppopt != NULL) {
     for (int k = 0; k < NBOPTION; ++k) {
@@ -334,35 +335,25 @@ int rfree(void *ptr) {
 }
 
 int rdafree(da *p) {
+  da_apply(p);
   da_dispose(&p);
   return 0;
 }
 
-int addline(da *p, FILE *filename, cnxt *cntxt) {
+int addline(ds *p, FILE *filename, cnxt *cntxt) {
   int c;
   while ((c = fgetc(filename)) != EOF && c != '\n') {
     if (cntxt->filter == NULL || cntxt->filter(c) != 0) {
       if (cntxt->transform == NULL || (c = cntxt->transform(c))) {
-        char *s = malloc(sizeof *s);
-        if (s == NULL) {
-          return -1;
-        }
-        *s = (char) c;
-        if (da_add(p, s) == NULL) {
-          free(s);
+        if (ds_add(p, (char)c) < 0) {
           return -1;
         }
       }
     }
   }
-  if (da_length(p) != 0) {
-    char *s = malloc(sizeof *s);
-    if (s == NULL) {
-      return -1;
-    }
-    *s = '\0';
-    if (da_add(p, s) == NULL) {
-      free(s);
+  if (ds_length(p) != 0) {
+    char s = '\0';
+    if (ds_add(p, s) < 0) {
       return -1;
     }
   }
