@@ -46,7 +46,7 @@ extern void da_dispose(da **aptr);
 //  da_apply : Libère les zones mémoires allouées pointées par le tableaux
 //    pointé par p
 //  Renvoie 0;
-extern int da_apply(da *p);
+extern int da_dispose_element(da *p);
 
 //  da_add : Renvoie NULL si ref vaut NULL. Tente sinon d'ajouter la référence
 //    selon la méthode de l'ajout en bout de chemin renvoie NULL en cas de

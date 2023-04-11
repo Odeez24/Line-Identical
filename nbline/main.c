@@ -39,10 +39,6 @@ typedef struct {
 //    et Pike pour les chaines de caractères.
 static size_t str_hashfun(const char *s);
 
-//  scptr_display : affiche sur la sortie standard *cptr, le caractère
-//    tabulation, la chaine de caractères pointée par s et la fin de ligne.
-//  Renvoie zéro en cas de succès, une valeur non nulle en cas d'échec.
-
 //  lnid_display : Affiche sur la sortire standart le contenu du tableau cpt,
 //    le caractére tabulation si la longueur de cpt est égale à celle du tableau
 //    filelist contenu dans cntxt. Ou une virgule si la longueur de cpt est
@@ -152,10 +148,7 @@ int main(int argc, const char *argv[]) {
     while ((resline = addline(line, f, &cntxt)) >= 0) {
       size_t dslen = ds_length(line);
       if (dslen != 0) {
-        char *s = malloc(dslen);
-        if (s == NULL) {
-          goto error_capacity;
-        }
+        char s[dslen];
         for (size_t k = 0; k < dslen; ++k) {
           s[k] = ds_ref(line, k);
         }
@@ -192,8 +185,14 @@ int main(int argc, const char *argv[]) {
               *cpt += 1;
             }
           }
-          free(s);
         } else {
+          char *s = malloc(dslen);
+          if (s == NULL) {
+            goto error_capacity;
+          }
+          for (size_t k = 0; k < dslen; ++k) {
+          s[k] = ds_ref(line, k);
+          }
           if (holdall_put(has, s) != 0) {
             free(s);
             goto error_capacity;
@@ -274,8 +273,7 @@ error:
   goto dispose;
 dispose:
   ds_dispose(&line);
-  da_apply(cptt);
-  da_dispose(&cptt);
+  rdafree(cptt);
   if (suppopt != NULL) {
     for (int k = 0; k < NBOPTION; ++k) {
       opt_dispose(&suppopt[k]);
@@ -335,7 +333,7 @@ int rfree(void *ptr) {
 }
 
 int rdafree(da *p) {
-  da_apply(p);
+  da_dispose_element(p);
   da_dispose(&p);
   return 0;
 }

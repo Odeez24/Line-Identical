@@ -51,7 +51,7 @@ void ds_dispose(ds **sptr) {
 
 int ds_add(ds *p, const char s) {
   if (LENGTH(p) == CAPACITY(p)) {
-    if (((sizeof (p->aref) * p->capacity)) > SIZE_MAX / DS__CAPACITY_MUL) {
+    if ((sizeof (p->aref) * p->capacity)> SIZE_MAX / DS__CAPACITY_MUL) {
       return -1;
     }
     char *t
