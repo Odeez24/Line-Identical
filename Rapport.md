@@ -31,5 +31,21 @@ L’algorithme a deux utilisations différentes :
 #### Tous les arguments passés à l’exécutable et qui ne sont pas des options prises en charge doivent être un fichier valide sinon une erreur a l’exécution se produira.
 
 ## Implémentation 
+### Problématiques 
+Le programme avait plusieurs obligations et problématique pour son fonctionnement
 
-  
+1. Le programme devait pouvoir lire sur un fichier une chaîne de caractère dont on ne connaissait pas ça longueur.
+2. Il devait aussi pouvoir enregistrer des occurrences de chaque chaîne de caractère selon le nombre de fichier que l'on ne connaît qu'à l’exécution ou enregistrer des numéros de lignes qui lier a un fichier qui peut avoir un nombre de ligne très petit ou très long.
+3. Il devait donc pouvoir enregistrer toute ses données en prenant le moins de temps lors de recherche.
+4. Et faire cela en étant le plus rapide et en prenant le moins d'espace mémoire
+
+### Solutions
+  Mon implémentations ce découpe en 5 modules.
+
+1. Les deux premiers modules sont le module hashtable et holdall qui sont ceux fournis et étudier en cours et qui n'ont pas été modifier.
+2. Le troisième module est le module opt qui a pour but de gérer les options, il possède trois fonctions :
+	1. opt_gen qui alloue les ressources pour gérer une option.
+	2. opt_dispose qui libère les ressources alloués pour une option.
+	3. opt_init qui elle initialise les options et sépare les arguments entre les options et les fichiers.
+
+3. Le quatrième est un module polymorphe de tableaux dynamique da 
