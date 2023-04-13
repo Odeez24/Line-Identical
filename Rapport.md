@@ -40,7 +40,9 @@ Le programme avait plusieurs obligations et problématique pour son fonctionneme
 4. Et faire cela en étant le plus rapide et en prenant le moins d'espace mémoire
 
 ### Solutions
-  Mon implémentations ce découpe en 5 modules.
+  Mon implémentations ce découpe en 5 modules, plus le main.
+
+#### Les modules
 
 1. Les deux premiers modules sont le module hashtable et holdall qui sont ceux fournis et étudier en cours et qui n'ont pas été modifier.
 2. Le troisième module est le module opt qui a pour but de gérer les options, il possède trois fonctions :
@@ -48,4 +50,30 @@ Le programme avait plusieurs obligations et problématique pour son fonctionneme
 	2. opt_dispose qui libère les ressources alloués pour une option.
 	3. opt_init qui elle initialise les options et sépare les arguments entre les options et les fichiers.
 
-3. Le quatrième est un module polymorphe de tableaux dynamique da 
+3. Le quatrième est un module polymorphe de tableaux dynamique da qui contiens des référence vers des objets.
+	1. Il possède les fonctions classiques telle que da_empty, da_add, da_dispose, da_ref qui renvoie la référence d'indice i du da et da_lenght.
+	2. La dernière fonction est da_dispose_element qui libère les zones mémoires pointées par les référence contenu dans da.
+4. Le dernier module est une ds qui est un module de chaîne de caractère dynamique qui ne stocke aucune donnée (aucune allocation n'est a effectuer sur l'élément à ajouter).
+	1. Il posséde les même fonction classique que le module da, donc ds_empty, ds_dispose, ds_add, ds_ref, ds_length.
+
+#### Le main
+Dans le main se trouve une nouvelle structure nommé cntxt qui sera le context d'utilisation pour nos fonctions des différents modules ou des fonctions du main.
+	Elle contient 3 champs les deux premiers sont liés aux options qui sont déclarées ensuite.
+
+1. Le champ filter prend la fonction de filtre passer en argument (ex : l'option --filter=isalnum alors le champ filter du contexte prendra alors la fonction isalnum de la bibliothèque <ctype.h>).
+2. Le champ transform lui prend la fonction liés a l'option --uppercase, il prend donc la fonction toupper si l'option est passée en argument a l’exécution.
+
+Le dernier champs lui est un da qui suite à l'appel de opt_init contiendra les arguments passé au programme qui ne sont pas des options. Donc si une option est mal écrite alors une erreur lors de l’exécution se produira.
+
+Ensuite sont déclarées les options par des appels à opt_gen, qui prend comme paramètre les deux nom de l'option, sa description ainsi que sa fonction qui permet d'initialiser le champ du contexte lier.
+
+Puis toute nos structure qui seront utiliser sont alloues comme hashtable, holdall, un da et un ds ainsi que un autre da pour la structure cntxt.
+
+Le corps du main est une boucle qui appelle la fonction addline qui enregistre une ligne du fichier ouvert en lecture est l'enregistre dans un ds.
+Puis une recherche dans la table de hachage se fait et selon le résultat soit la ligne est ajouter à la table sont le tableau de compteur lié a la ligne est incrémenté ou affecté.
+
+Ensuite pour chaque chaîne contenu dans la table si il respecte la condition lorsque il y a un ou plusieurs fichier alors elle est affiché précéder des éléments du tableau de compteur qui lui sont liés.
+
+Pour finir une libération de toute la mémoire alloués est effectuer.
+
+## Problème durant la conception 
