@@ -133,7 +133,7 @@ int main(int argc, const char *argv[]) {
   }
   size_t len = da_length(cntxt.filelist);
   if (len == 0) {
-    printf("No file as entry");
+    printf("No file as entry\n");
     goto dispose;
   }
   for (size_t k = 0; k < len; ++k) {

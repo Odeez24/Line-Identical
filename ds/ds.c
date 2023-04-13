@@ -4,7 +4,7 @@
 
 #include "ds.h"
 
-#define DS__CAPACITY_MIN 1
+#define DS__CAPACITY_MIN 32
 #define DS__CAPACITY_MUL 2
 
 //--- Définition da ------------------------------------------------------------

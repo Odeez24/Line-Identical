@@ -3,7 +3,7 @@
 
 #include "da.h"
 
-#define DA__CAPACITY_MIN 1
+#define DA__CAPACITY_MIN 4
 #define DA__CAPACITY_MUL 2
 
 //--- Définition da ------------------------------------------------------------
