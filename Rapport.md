@@ -55,6 +55,8 @@ Le programme avait plusieurs obligations et problématique pour son fonctionneme
 	2. La dernière fonction est da_dispose_element qui libère les zones mémoires pointées par les référence contenu dans da.
 4. Le dernier module est une ds qui est un module de chaîne de caractère dynamique qui ne stocke aucune donnée (aucune allocation n'est a effectuer sur l'élément à ajouter).
 	1. Il posséde les même fonction classique que le module da, donc ds_empty, ds_dispose, ds_add, ds_ref, ds_length.
+5. Lorsque l'on créer un da ou un ds une zone mémoire d'une certaine taille est allouée la taille de cette zone mémoire pour da ou ds sont une macroconstante nommé DA__CAPACITY_MIN et DS__CAPACITY_MIN où DA_CAPACITY_MIN vaut 4 car après plusieurs test dans un même texte c'est la récurrence moyenne d'une ligne, il y aura de la réallocation obligatoire sur des texte qui assez gros comme les misérables où dans ce texte des lignes apparaissent plus de 20 fois mais j'ai choisis 4 comme valeur initial car cela permet de sauvées de mémoire tout en restant efficace sur des petits textes.
+DS__CAPACITY_MIN lui est a 32, donc 32 caractères sur une seule ligne cela permet d'être assez efficace sur des textes avec de longue ligne sans perdre en efficacité sur des texte avec des petite ligne.
 
 #### Le main
 Dans le main se trouve une nouvelle structure nommé cntxt qui sera le context d'utilisation pour nos fonctions des différents modules ou des fonctions du main.
@@ -77,3 +79,11 @@ Ensuite pour chaque chaîne contenu dans la table si il respecte la condition lo
 Pour finir une libération de toute la mémoire alloués est effectuer.
 
 ## Problème durant la conception 
+1. Le module ds est module qui est du au fait que je n'ai pas réussi à utilisé efficacement le module da pour la lecture de ligne, cela me posait des problèmes de mémoire qui sont pareillement régler.
+2. Le module opt est lui le module qui fut le plus compliqué a faire du au fait que celui-ci est utilisable en dehors de ce projet.
+3. Mon plus gros problème est une sur-utilisation de la mémoire que je n'arrive pas ni à expliquer ni à corriger. Ce probléme de mémoire est un facteur de 30 sur la taille du texte. Par exemple sur un seul fichier les misérables j'ai un temps d’exécution de 0.214 mais j'utilise 87 mo d'espace mémoire.
+
+
+## Conclusion
+* Mon projet n'est pas parfait je pense que si je n'ai eu que celui-ci j’aurai pus régler mon problème de mémoire en reprenant mon programme principale et mes modules de zéro mais du à l’existence d'autre projet je ne peut passer du temps sur cela.
+* Ce projet m'as permis de réutiliser des conception vu en Algo 1 comme des concepts vu en Algo 3 et m'as permis de m'améliorer sur beaucoup de sujet.
