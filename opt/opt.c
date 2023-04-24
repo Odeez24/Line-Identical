@@ -30,10 +30,11 @@ static const char *suffixe(const char *s1, const char *s2) {
 //  Renvoie NULL si les deux chaînes n'ont rien en commun, s sinon.
 void *prefix(const char *s1, const char *s2, char *s) {
   int i = 0;
-  while (s1[i] == s2[i]) {
+  while (s1[i] == s2[i] && s1[i] != '\0') {
     s[i] = s2[i];
     i++;
   }
+  s[i] = '\0';
   if (i == 0) {
     return NULL;
   }

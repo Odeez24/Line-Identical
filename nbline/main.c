@@ -23,6 +23,16 @@
 
 #define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ...\n"
 
+#define LONG "--"
+#define SHORT "-"
+
+#define LONGFILTER "filter="
+#define SHORTFILTER "f"
+
+#define LONGUPPER "uppercase"
+#define SHORTUPPER "u"
+
+
 //--- Création des options -----------------------------------------------------
 
 #define NBOPTION 2
@@ -84,10 +94,10 @@ int main(int argc, const char *argv[]) {
     printf(USAGE, argv[0], argv[0]);
     return EXIT_FAILURE;
   }
-  opt *opt1 = opt_gen("-u", "--uppercase",
+  opt *opt1 = opt_gen(SHORT SHORTUPPER, LONG LONGUPPER,
       "Met tous les caractéres enregistrer en majuscule", false,
       (int (*)(const void *, const void *))transform_choose);
-  opt *opt2 = opt_gen("-f", "--filter=",
+  opt *opt2 = opt_gen(SHORT SHORTFILTER, "--filter=",
       "Applique le filtre passer en argument", true,
       (int (*)(const void *, const void *))filter_choose);
   opt *suppopt[NBOPTION] = {
@@ -145,7 +155,7 @@ int main(int argc, const char *argv[]) {
     }
     int nbline = 1;
     int resline;
-    while ((resline = addline(line, f, &cntxt)) >= 0) {
+    while ((resline = addline(line, f, &cntxt)) == 0) {
       size_t dslen = ds_length(line);
       if (dslen != 0) {
         char s[dslen];
