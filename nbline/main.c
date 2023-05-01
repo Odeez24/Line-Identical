@@ -20,6 +20,8 @@
   "affiche pour chaque ligne de texte non vide apparaissant"                   \
   "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
   "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
+  "Les options peuvent être mise à n'importe quel endroit dans la commande "   \
+  "d'appel après l'éxécutable.\n"                                              \
 
 #define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ...\n"
 

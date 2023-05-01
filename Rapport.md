@@ -5,6 +5,7 @@ Projet d’Algorithmique
 # Sommaire
 * Description de l' algorithme et utilisation
 * Implémentation de l'algorithme
+* Exemple d’exécution
 * Problème durant la conception
 * Conclusion
 
@@ -78,12 +79,29 @@ Ensuite pour chaque chaîne contenu dans la table si il respecte la condition lo
 
 Pour finir une libération de toute la mémoire alloués est effectuer.
 
+## Exemple d’exécution
+#### Exécution sur le texte bobdylan_iwysb :
+![Capture d’écran du 2023-05-01 20-25-52.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-25-52.png)
+* Avec Valgrind
+	![Capture d’écran du 2023-05-01 20-26-39.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-26-39.png)
+* Et time
+![Capture d’écran du 2023-05-01 20-27-18.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-27-18.png)
+
+#### Les misérables
+(Ceci n'est qu'un échantillon du résultat donner dû à là longueur du résultat)
+![Capture d’écran du 2023-05-01 20-28-19.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-28-19.png)
+* Valgrind 
+![Capture d’écran du 2023-05-01 20-30-05.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-30-05.png)
+* time
+![Capture d’écran du 2023-05-01 20-30-56.png](/home/florent/Images/Captures%20d%E2%80%99%C3%A9cran/Capture%20d%E2%80%99%C3%A9cran%20du%202023-05-01%2020-30-56.png)
+
 ## Problème durant la conception 
-1. Le module ds est module qui est du au fait que je n'ai pas réussi à utilisé efficacement le module da pour la lecture de ligne, cela me posait des problèmes de mémoire qui sont pareillement régler.
+1. Le module ds est dû au fait que je n'ai pas réussi à utilisé efficacement le module da pour la lecture de ligne, cela me posait des problèmes de mémoires qui sont pareillement régler.
 2. Le module opt est lui le module qui fut le plus compliqué a faire du au fait que celui-ci est utilisable en dehors de ce projet.
-3. Mon plus gros problème est une sur-utilisation de la mémoire que je n'arrive pas ni à expliquer ni à corriger. Ce probléme de mémoire est un facteur de 30 sur la taille du texte. Par exemple sur un seul fichier les misérables j'ai un temps d’exécution de 0.214 mais j'utilise 87 mo d'espace mémoire.
+3. Mon plus gros problème est une sur-utilisation de la mémoire que je n'arrive pas ni à expliquer ni à corriger. Ce problème de mémoire est un facteur de 28,30 sur la taille du texte.
 
 
 ## Conclusion
 * Mon projet n'est pas parfait je pense que si je n'ai eu que celui-ci j’aurai pus régler mon problème de mémoire en reprenant mon programme principale et mes modules de zéro mais du à l’existence d'autre projet je ne peut passer du temps sur cela.
 * Ce projet m'as permis de réutiliser des conception vu en Algo 1 comme des concepts vu en Algo 3 et m'as permis de m'améliorer sur beaucoup de sujet.
+* Je tient à remercier Haddag Edouard, Théo Renaux Verdiere, Louis Dumontier Louis et Salles Théo pour leur aide à la résolution de problème sur mon programme.
