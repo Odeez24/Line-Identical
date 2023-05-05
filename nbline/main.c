@@ -157,7 +157,7 @@ int main(int argc, const char *argv[]) {
     }
     int nbline = 1;
     int resline;
-    while ((resline = addline(line, f, &cntxt)) == 0) {
+    while ((resline = addline(line, f, &cntxt)) >= 0) {
       size_t dslen = ds_length(line);
       if (dslen != 0) {
         char s[dslen];
@@ -198,6 +198,7 @@ int main(int argc, const char *argv[]) {
             }
           }
         } else {
+          if (k == 0) {
           char *s = malloc(dslen);
           if (s == NULL) {
             goto error_capacity;
@@ -233,6 +234,7 @@ int main(int argc, const char *argv[]) {
           if (cptt == NULL) {
             goto error_capacity;
           }
+        }
         }
         if (len == 1) {
           ++nbline;
