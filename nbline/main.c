@@ -199,42 +199,42 @@ int main(int argc, const char *argv[]) {
           }
         } else {
           if (k == 0) {
-          char *s = malloc(dslen);
-          if (s == NULL) {
-            goto error_capacity;
+            char *s = malloc(dslen);
+            if (s == NULL) {
+              goto error_capacity;
+            }
+            for (size_t k = 0; k < dslen; ++k) {
+            s[k] = ds_ref(line, k);
+            }
+            if (holdall_put(has, s) != 0) {
+              free(s);
+              goto error_capacity;
+            }
+            int *cpt = malloc(sizeof *cpt);
+            if (cpt == NULL) {
+              goto error_capacity;
+            }
+            if (len == 1) {
+              *cpt = nbline;
+            } else {
+              *cpt = 1;
+            }
+            if (da_add(cptt, cpt) == NULL) {
+              free(cpt);
+              goto error_capacity;
+            }
+            if (holdall_put(hascpt, cptt) != 0) {
+              free(cptt);
+              goto error_capacity;
+            }
+            if (hashtable_add(ht, s, cptt) == NULL) {
+              goto error_capacity;
+            }
+            cptt = da_empty();
+            if (cptt == NULL) {
+              goto error_capacity;
+            }
           }
-          for (size_t k = 0; k < dslen; ++k) {
-          s[k] = ds_ref(line, k);
-          }
-          if (holdall_put(has, s) != 0) {
-            free(s);
-            goto error_capacity;
-          }
-          int *cpt = malloc(sizeof *cpt);
-          if (cpt == NULL) {
-            goto error_capacity;
-          }
-          if (len == 1) {
-            *cpt = nbline;
-          } else {
-            *cpt = 1;
-          }
-          if (da_add(cptt, cpt) == NULL) {
-            free(cpt);
-            goto error_capacity;
-          }
-          if (holdall_put(hascpt, cptt) != 0) {
-            free(cptt);
-            goto error_capacity;
-          }
-          if (hashtable_add(ht, s, cptt) == NULL) {
-            goto error_capacity;
-          }
-          cptt = da_empty();
-          if (cptt == NULL) {
-            goto error_capacity;
-          }
-        }
         }
         if (len == 1) {
           ++nbline;
