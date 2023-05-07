@@ -25,7 +25,7 @@ static const char *suffixe(const char *s1, const char *s2) {
   return suffixe(s1 + 1, s2 + 1);
 }
 
-//  prefix : Affecte a s la partie commune entre les chaînes de caractére s1 et
+//  prefix : Affecte à s la partie commune entre les chaînes de caractére s1 et
 //    s2.
 //  Renvoie NULL si les deux chaînes n'ont rien en commun, s sinon.
 void *prefix(const char *s1, const char *s2, char *s) {
@@ -41,7 +41,7 @@ void *prefix(const char *s1, const char *s2, char *s) {
   return s;
 }
 
-//  returntest : Enumération des différente valeur de retour de la fonction
+//  returntest : Énumération des différentes valeurs de retour de la fonction
 //    opt_test.
 typedef enum {
   NOT_OPT,
@@ -56,10 +56,10 @@ typedef enum {
 //    contenu dans le tableau optsupp. Si oui alors appelle sa fonction
 //    d'initialisation.
 //  Renvoie NOT_OPT si l'argument n'est pas une option, ERR_ADDTEST si une
-//    erreur est survenu lors de l'exécution de la fonction d'initialisation
+//    erreur est survenue lors de l'exécution de la fonction d'initialisation
 //    d'une option, CAP_ERR en cas de dépassement de capacité. SHORTOPT si
-//    l'argument est la version courte de l'option, SHORTOPTARG si l'argument
-//    est la version courte de l'option et que l'option prend un argument ou
+//    l'argument est la courte version de l'option, SHORTOPTARG si l'argument
+//    est la courte version de l'option et que l'option prend un argument ou
 //    LONGOPT si l'argument est la version longue de l'option.
 static returntest opt_test(void *cntxt, opt **optsupp, const char **argv, int k,
     size_t nbopt) {

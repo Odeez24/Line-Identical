@@ -14,14 +14,14 @@
 #define DESC                                                                   \
   "Si un seul fichier en argument sur la ligne de commande, affiche pour "     \
   "chaque ligne de texte non vide apparaissant au moins deux fois dans le "    \
-  "fichier, les numéros des lignes où elle apparaissent et le contenu de la "  \
+  "fichier, les numéros des lignes où elles apparaissent et le contenu de la " \
   "ligne. "                                                                    \
   "Si au moins deux noms de fichiers en argument sur la ligne de commande, "   \
-  "affiche pour chaque ligne de texte non vide apparaissant"                   \
+  "affiche pour chaque ligne de texte non vide apparaissant "                  \
   "au moins une fois dans tous les fichiers, le nombre d’occurrences de la "   \
   "ligne dans chacun des fichiers et le contenu de la ligne.\n"                \
-  "Les options peuvent être mise à n'importe quel endroit dans la commande "   \
-  "d'appel après l'éxécutable.\n"                                              \
+  "Les options peuvent être mises à n'importe quel endroit dans la commande "  \
+  "d'appel après l'exécutable.\n"                                              \
 
 #define USAGE "Syntaxe : %s [fichier] or  %s [fichier1] [fichier2] ...\n"
 
@@ -34,12 +34,9 @@
 #define LONGUPPER "uppercase"
 #define SHORTUPPER "u"
 
-
-//--- Création des options -----------------------------------------------------
-
 #define NBOPTION 2
 
-//--- Gestion des arguments ----------------------------------------------------
+//--- Définition structure et fonctions ----------------------------------------
 
 typedef struct {
   int (*filter)(int c);
@@ -47,48 +44,50 @@ typedef struct {
   da *filelist;
 } cnxt;
 
-//  str_hashfun : l'une des fonctions de pré-hachage conseillées par Kernighan
+//  str_hashfun : L'une des fonctions de pré-hachage conseillées par Kernighan
 //    et Pike pour les chaines de caractères.
 static size_t str_hashfun(const char *s);
 
-//  lnid_display : Affiche sur la sortire standart le contenu du tableau cpt,
-//    le caractére tabulation si la longueur de cpt est égale à celle du tableau
+//  lnid_display : Affiche sur la sortie standard le contenu du tableau cpt,
+//    le caractère tabulation si la longueur de cpt est égale à celle du tableau
 //    filelist contenu dans cntxt. Ou une virgule si la longueur de cpt est
-//    supérieur ou  égale a deux. Puis affiche la chaîne de caratére s et la
+//    supérieur ou égale à deux. Puis affiche la chaîne de caratère s et la
 //    fin de ligne.
-//  Renvoie zéro en cas dxe succes une valeur non nulle sinon.
+//  Renvoie zéro en cas de succès une valeur non nulle sinon.
 static int lnid_display(cnxt *cntxt, const char *s, da *cpt);
 
-//  rfree : libère la zone mémoire pointée par ptr et renvoie zéro.
+//  rfree : Libère la zone mémoire pointée par ptr et renvoie zéro.
 static int rfree(void *ptr);
 
-//  rdefree : Libére le tableau dnamique pointée par p et renvoi zéro.
+//  rdefree : Libére le tableau dynamique pointé par p et renvoie zéro.
 static int rdafree(da *p);
 
 //  addline : On suppose que le fichier filename est ouvert en lecture. Tente
-//    de lire une ligne de filename caractére par caratére et les ajoutent à p
-//    si ils respectent le filtre liée a cntxt si celui ci est défini et
-//    transforme les caractéres selon la fopnction transform decntxt si celle-ci
-//     est défini.
-//  Renvoie zéro en cas de succès, une valeur négative en cas de probléme de
+//    de lire une ligne de filename caractère par caractère et les ajoutent à p
+//    s'ils respectent le filtre lié à cntxt si celui-ci est défini et
+//    transforme les caractères selon la fonction transform de cntxt si celle-ci
+//    est défini.
+//  Renvoie zéro en cas de succès, une valeur négative en cas de problème de
 //    lecture ou de dépassement de capacité, une valeur positive si la fin de
-//    fichier est atteinte.
+//    fichier est atteint.
 static int addline(ds *p, FILE *filename, cnxt *cntxt);
 
-//  addfile : Ajoute le du nom du fichier filename au tableau dynamique pointer
+//  addfile : Ajoute-le du nom du fichier filename au tableau dynamique pointer
 //    par p.
 //  Renvoie NULL en cas de dépassement de capacité, filename sinon.
 static void *addfile(cnxt *p, const char *filename);
 
-//  filter_choose : Affecte aux champ filter de cntxt la fonction lier a la
-//    chaîne de caractére s si celle_ci correspond bien.
-//  Renvoie zéro en cas de succés, une valeur négative sinon.
+//  filter_choose : Affecte aux champs filter de cntxt la fonction lier à la
+//    chaîne de caractère s si celle-ci correspond bien.
+//  Renvoie zéro en cas de succès, une valeur négative sinon.
 static int filter_choose(cnxt *cntxt, const char *s);
 
-//  transform_choose : Affecte aux champ transform de cntxt la fonction lier a
-//    la chaîne de caractére s si celle_ci correspond bien.
-//  Renvoie zéro en cas de succés, une valeur négative sinon.
+//  transform_choose : Affecte aux champs transform de cntxt la fonction lier à
+//    la chaîne de caractère s si celle-ci correspond bien.
+//  Renvoie zéro en cas de succès, une valeur négative sinon.
 static int transform_choose(cnxt *cntxt, const char *s);
+
+//--- Main ---------------------------------------------------------------------
 
 int main(int argc, const char *argv[]) {
   if (argc == 1) {
@@ -113,8 +112,8 @@ int main(int argc, const char *argv[]) {
   holdall *hascpt = holdall_empty();
   hashtable *ht = hashtable_empty((int (*)(const void *, const void *))strcmp,
       (size_t (*)(const void *))str_hashfun);
-  if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL ||
-    line == NULL || cptt == NULL) {
+  if (has == NULL || ht == NULL || hascpt == NULL || filelist == NULL
+      || line == NULL || cptt == NULL) {
     goto error_capacity;
   }
   cnxt cntxt = {
@@ -204,7 +203,7 @@ int main(int argc, const char *argv[]) {
               goto error_capacity;
             }
             for (size_t k = 0; k < dslen; ++k) {
-            s[k] = ds_ref(line, k);
+              s[k] = ds_ref(line, k);
             }
             if (holdall_put(has, s) != 0) {
               free(s);
@@ -341,6 +340,8 @@ static int lnid_display(cnxt *cntxt, const char *s, da *cpt) {
   }
 }
 
+//--- Fonctions ----------------------------------------------------------------
+
 int rfree(void *ptr) {
   free(ptr);
   return 0;
@@ -357,7 +358,7 @@ int addline(ds *p, FILE *filename, cnxt *cntxt) {
   while ((c = fgetc(filename)) != EOF && c != '\n') {
     if (cntxt->filter == NULL || cntxt->filter(c) != 0) {
       if (cntxt->transform == NULL || (c = cntxt->transform(c))) {
-        if (ds_add(p, (char)c) < 0) {
+        if (ds_add(p, (char) c) < 0) {
           return -1;
         }
       }

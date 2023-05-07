@@ -47,9 +47,9 @@ void da_dispose(da **aptr) {
   return;
 }
 
-int da_dispose_element(da *p){
+int da_dispose_element(da *p) {
   for (size_t k = 0; k < LENGTH(p); ++k) {
-    free((void *)p->aref[k]);
+    free((void *) p->aref[k]);
   }
   return 0;
 }

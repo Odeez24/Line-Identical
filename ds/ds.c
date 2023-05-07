@@ -1,7 +1,6 @@
 //  ds.c : partie implantation d'un  module  pour la spécification d'un tableau
 //    dynamique de caractères.
 
-
 #include "ds.h"
 
 #define DS__CAPACITY_MIN 32
@@ -27,7 +26,7 @@ ds *ds_empty() {
   if (p == NULL) {
     return NULL;
   }
-  char *tab = malloc(DS__CAPACITY_MIN * sizeof (p->aref));
+  char *tab = malloc(DS__CAPACITY_MIN * sizeof(p->aref));
   if (tab == NULL) {
     free(p);
     return NULL;
@@ -38,12 +37,11 @@ ds *ds_empty() {
   return p;
 }
 
-
 void ds_dispose(ds **sptr) {
   if (*sptr == NULL) {
     return;
   }
-  free((void *)(*sptr)->aref);
+  free((void *) (*sptr)->aref);
   free(*sptr);
   *sptr = NULL;
   return;
@@ -51,12 +49,12 @@ void ds_dispose(ds **sptr) {
 
 int ds_add(ds *p, const char s) {
   if (LENGTH(p) == CAPACITY(p)) {
-    if ((sizeof (p->aref) * p->capacity)> SIZE_MAX / DS__CAPACITY_MUL) {
+    if ((sizeof(p->aref) * p->capacity) > SIZE_MAX / DS__CAPACITY_MUL) {
       return -1;
     }
     char *t
       = realloc(p->aref,
-        (sizeof (p->aref) * p->capacity * DS__CAPACITY_MUL));
+        (sizeof(p->aref) * p->capacity * DS__CAPACITY_MUL));
     if (t == NULL) {
       return -1;
     }
