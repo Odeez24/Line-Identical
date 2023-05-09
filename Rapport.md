@@ -1,3 +1,5 @@
+# Rapport projet Algorithmique 3 2022/2023
+
 # Sommaire
 * Description de l'algorithme et utilisation
 * Implémentation de l'algorithme
@@ -9,11 +11,11 @@
 ### Description
 L’algorithme a deux utilisations différentes :
 
-* La première est lorsqu'un seul fichier est passée en argument du programme, affiche pour chaque ligne de texte non vide du fichier, apparaissant au moins deux fois dans le fichier, les numéros des lignes où elle apparaît et le contenu de la ligne.
-* La seconde est lorsque au minimum deux fichiers sont passés en argument du programme, affiche pour chaque ligne de texte non vide apparaissant au moins une fois dans tous les fichiers, le nombre d’occurrences de la ligne dans chacun des fichiers et le contenu de la ligne.
+* La première: lorsqu'un seul fichier est passée en argument du programme, affiche pour chaque ligne de texte non vide du fichier, apparaissant au moins deux fois dans le fichier, les numéros des lignes où elle apparaît et le contenu de la ligne.
+* La seconde: lorsque au minimum deux fichiers sont passés en argument du programme, affiche pour chaque ligne de texte non vide apparaissant au moins une fois dans tous les fichiers, le nombre d’occurrences de la ligne dans chacun des fichiers et le contenu de la ligne.
 
 ### Utilisation
-* Appel à exécutable "./lnid" puis les fichiers et/ou les options peuvent être mise à n'importe quel endroit.
+* Appel à exécutable "./lnid" les fichiers et les différentes options peuvent être placé à n'importe quel endroit dans les arguments.
 	* Liste des options
 
 |
@@ -57,24 +59,24 @@ DS__CAPACITY_MIN lui est à 32, car 32 caractères  par ligne permet d'être ass
 
 #### Le main
 
-Dans le main se trouve une nouvelle structure nommée cntxt qui sera le contexte d'utilisation pour nos fonctions des différents modules ou des fonctions du main.
+* Dans le main se trouve une nouvelle structure nommée cntxt qui sera le contexte d'utilisation pour nos fonctions des différents modules ou des fonctions du main.
 	Elle contient 3 champs, les deux premiers sont liés aux options qui sont déclarées ensuite.
 
 1. Le champ filter prend la fonction de filtre passé en argument (ex : l'option --filter=isalnum alors le champ filter du contexte prendra alors la fonction isalnum de la bibliothèque <ctype.h>).
 2. Le champ transform lui prend la fonction liée à l'option --uppercase, il prend donc la fonction toupper si l'option est passée en argument à l’exécution.
 
-Le dernier champ lui est un da qui suite à l'appel de opt_init contiendra les arguments passés au programme qui ne sont pas des options. Ainsi, si une option est mal écrite, alors une erreur lors de l’exécution se produira.
+* Le dernier champ lui est un da qui suite à l'appel de opt_init contiendra les arguments passés au programme qui ne sont pas des options. Ainsi, si une option est mal écrite, alors une erreur lors de l’exécution se produira.
 
-Ensuite sont déclarées les options par des appels à opt_gen, qui prend comme paramètre les deux noms de l'option, sa description ainsi que sa fonction qui permet d'initialiser le champ du contexte lié.
+* Ensuite sont déclarées les options par des appels à opt_gen, qui prend comme paramètre les deux noms de l'option, sa description ainsi que sa fonction qui permet d'initialiser le champ du contexte lié.
 
-Puis toutes nos structures qui seront utiliser sont allouées comme hashtable, holdall, un da et un ds ainsi qu'un autre da pour la structure cntxt.
+ * Puis toutes nos structures qui seront utiliser sont allouées comme hashtable, holdall, un da et un ds ainsi qu'un autre da pour la structure cntxt.
 
-Le corps du main est une boucle qui appelle la fonction addline qui enregistre une ligne du fichier ouvert en lecture est l'enregistre dans un ds.
+* Le corps du main est une boucle qui appelle la fonction addline qui enregistre une ligne du fichier ouvert en lecture est l'enregistre dans un ds.
 Puis une recherche dans la table de hachage se fait et selon le résultat soit la recherche est positive donc le compteur lié à la ligne est incrémentée, soit si nous somme sur le premier fichier la ligne est ajoutée à la table et sont le tableau de compteur est ajouté lui aussi.
 
-Ensuite, pour chaque chaîne contenue dans la table, si elle respecte la condition selon s'il y a un ou plusieurs fichiers,  alors elle est affichée précéder des éléments du tableau de compteur qui lui sont liés.
+* Ensuite, pour chaque chaîne contenue dans la table, si elle respecte la condition selon s'il y a un ou plusieurs fichiers,  alors elle est affichée précéder des éléments du tableau de compteur qui lui sont liés.
 
-Pour finir, une libération de toute la mémoire allouée est effectuée.
+* Pour finir, une libération de toute la mémoire allouée est effectuée.
 
 ## Exemple d’exécution
 #### Exécution sur le texte bobdylan_iwysb :
