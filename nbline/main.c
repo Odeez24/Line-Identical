@@ -176,6 +176,7 @@ int main(int argc, const char *argv[]) {
                 free(cpt);
                 goto error_capacity;
               }
+              nbline += 1;
             } else {
               int *cpt = da_ref(cptr, k);
               *cpt += 1;
